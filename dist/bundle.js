@@ -9524,10 +9524,10 @@ module.exports = getIteratorFn;
 
 // Button Component is a presentation component.
 const Button = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-  "div",
-  { className: "button", id: props.btnId },
+  'div',
+  { className: props.btnClass, id: props.btnId },
   __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-    "button",
+    'button',
     { onClick: props.onclick },
     props.text
   )
@@ -9546,10 +9546,10 @@ const Button = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElem
 
 // Editor Component shows code inputted / editted by user(s).
 const Editor = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-  "div",
-  { id: "editor" },
+  'div',
+  { id: props.editorId },
   __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-    "textarea",
+    'textarea',
     { onChange: e => props.onchange(e) },
     props.content
   )
@@ -9568,8 +9568,8 @@ const Editor = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElem
 
 // Editor Component shows code inputted / editted by user(s).
 const Output = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-  "div",
-  { id: "output" },
+  'div',
+  { id: props.outputId },
   props.content
 );
 
@@ -9596,8 +9596,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom__ = __webpack_require__(84);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_react_dom___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_react_dom__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__editor_jsx__ = __webpack_require__(82);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__output_jsx__ = __webpack_require__(83);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__button_jsx__ = __webpack_require__(81);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__button_jsx__ = __webpack_require__(81);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__output_jsx__ = __webpack_require__(83);
 
 
 
@@ -9618,8 +9618,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
   // Stringify data.
   stringify(obj) {
 
-    // These data types do not have toString() functionality.
-    // They also will not render properly to a React DOM object as-is.
+    // These data types do not have toString() functionality and do not render properly to a React DOM.
     switch (obj) {
       case undefined:
         return 'undefined';
@@ -9656,8 +9655,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     }
   }
 
-  // Keep track of editor text. May come in handy if code-sharing
-  // funtionality is added in the future.
+  // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
   onchange(e) {
     this.setState({ editorContent: e.target.value });
   }
@@ -9692,9 +9690,9 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         { id: 'title' },
         'ESC (Eval/Stringify/Console.log)'
       ),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__editor_jsx__["a" /* default */], { onchange: this.onchange }),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_4__button_jsx__["a" /* default */], { onclick: this.runcode, btnID: 'runcode', text: 'Run Code' }),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__output_jsx__["a" /* default */], { content: this.state.outputContent })
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__editor_jsx__["a" /* default */], { onchange: this.onchange, editorId: 'editor' }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__button_jsx__["a" /* default */], { onclick: this.runcode, btnClass: 'btnClass', btnID: 'runcode', text: 'Run Code' }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_4__output_jsx__["a" /* default */], { content: this.state.outputContent, outputId: 'output' })
     );
   }
 }

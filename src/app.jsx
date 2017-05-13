@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { render } from 'react-dom';
 import Editor from './editor.jsx';
-import Output from './output.jsx';
 import Button from './button.jsx';
+import Output from './output.jsx';
 
 class App extends Component {
   constructor(props) {
@@ -18,8 +18,7 @@ class App extends Component {
   // Stringify data.
   stringify(obj) {
 
-    // These data types do not have toString() functionality.
-    // They also will not render properly to a React DOM object as-is.
+    // These data types do not have toString() functionality and do not render properly to a React DOM.
     switch (obj) {
       case undefined: return 'undefined';
       case null: return 'null';
@@ -40,15 +39,14 @@ class App extends Component {
       case Function: return obj.toString();
 
       // Strings need quotes.
-      case String: return `'${obj}'`
+      case String: return `'${obj}'`;
 
       // All others need not be stringified
       default: return obj;
     }
   }
 
-  // Keep track of editor text. May come in handy if code-sharing
-  // funtionality is added in the future.
+  // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
   onchange(e) {
     this.setState({ editorContent: e.target.value });
   }
@@ -75,9 +73,9 @@ class App extends Component {
     return (
       <div id="app">
         <h1 id="title">ESC (Eval/Stringify/Console.log)</h1>
-        <Editor onchange={this.onchange} />
-        <Button onclick={this.runcode} btnID="runcode" text="Run Code" />
-        <Output content={this.state.outputContent} />
+        <Editor onchange={this.onchange} editorId="editor" />
+        <Button onclick={this.runcode} btnClass="btnClass" btnID="runcode" text="Run Code" />
+        <Output content={this.state.outputContent} outputId="output" />
       </div>
     )
   }
