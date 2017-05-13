@@ -17,7 +17,9 @@ class App extends Component {
 
   // Stringify data.
   stringify(obj) {
+
     // These data types do not have toString() functionality.
+    // They also will not render properly to a React DOM object as-is.
     switch (obj) {
       case undefined: return 'undefined';
       case null: return 'null';
@@ -28,10 +30,10 @@ class App extends Component {
     // Stringify conditionally.
     switch (obj.constructor) {
 
-      // Recursive stringify Object literals.
+      // Recursive stringify any nested Object literals.
       case Object: return `{ ${Object.keys(obj).map(key => key + ": " + this.stringify(obj[key]))} }`;
 
-      // Return Array string.
+      // Recursive stringify any nested Array instances.
       case Array: return `[${obj.map((e, i) => i !== 0 ? " " + this.stringify(e) : this.stringify(e))}]`;
 
       // Functions have toString() functionality.
@@ -40,22 +42,32 @@ class App extends Component {
       // Strings need quotes.
       case String: return `'${obj}'`
 
-      // All others.
+      // All others need not be stringified
       default: return obj;
     }
   }
 
-  // On change of editor.
+  // Keep track of editor text. May come in handy if code-sharing
+  // funtionality is added in the future.
   onchange(e) {
     this.setState({ editorContent: e.target.value });
   }
 
   // When user clicks "Run Code" button.
   runcode() {
+
+    // Variable to refer to evaluated code.
     let evaluated;
+
+    // Try-catch block for evaluating code in case of errors.
     try { evaluated = eval(this.state.editorContent); }
+
+    // If error, output error message and return out of function.
     catch (err) { return this.setState({ outputContent: err.message }); }
+
+    // Code reachable only without error. Output evaluated code.
     this.setState({ outputContent: this.stringify(evaluated) });
+
   }
 
   // Render code editor and console output.

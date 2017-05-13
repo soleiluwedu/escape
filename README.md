@@ -1,2 +1,2 @@
 # esc
-A React SPA for sharing and testing code.
+A React SPA to eval/stringify/console.logging code.
