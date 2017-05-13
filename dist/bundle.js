@@ -9688,7 +9688,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'h1',
         { id: 'title' },
-        'ESC (Eval/Stringify/Console.log)'
+        'Eval/Stringify/Console.log: A Programmer\'s Editor'
       ),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__editor_jsx__["a" /* default */], { onchange: this.onchange, editorId: 'editor' }),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__button_jsx__["a" /* default */], { onclick: this.runcode, btnClass: 'btnClass', btnID: 'runcode', text: 'Run Code' }),

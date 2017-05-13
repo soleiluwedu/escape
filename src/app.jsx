@@ -72,7 +72,7 @@ class App extends Component {
   render() {
     return (
       <div id="app">
-        <h1 id="title">ESC (Eval/Stringify/Console.log)</h1>
+        <h1 id="title">Eval/Stringify/Console.log: A Programmer's Editor</h1>
         <Editor onchange={this.onchange} editorId="editor" />
         <Button onclick={this.runcode} btnClass="btnClass" btnID="runcode" text="Run Code" />
         <Output content={this.state.outputContent} outputId="output" />
