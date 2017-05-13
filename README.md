@@ -1,2 +1,2 @@
-# esc
-A React SPA to eval/stringify/console.logging code.
+# escape
+A React SPA to eval/stringify/console.log code.

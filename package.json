@@ -1,7 +1,7 @@
 {
-  "name": "esc",
+  "name": "escape",
   "version": "0.0.1",
-  "description": "Eval/Stringify/Console.log, by Thai-Duong Nguyen",
+  "description": "Eval/Stringify/Console.log: A Programmer's Editor, by Thai-Duong Nguyen",
   "main": "index.js",
   "scripts": {
     "start": "nodemon server/server.js",
@@ -9,18 +9,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/soleiluwedu/esc.git"
+    "url": "git+https://github.com/soleiluwedu/escape.git"
   },
   "keywords": [
-    "define",
-    "things"
+    "eval",
+    "stringify",
+    "code"
   ],
   "author": "Thai-Duong Nguyen",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/soleiluwedu/esc/issues"
+    "url": "https://github.com/soleiluwedu/escape/issues"
   },
-  "homepage": "https://github.com/soleiluwedu/esc#readme",
+  "homepage": "https://github.com/soleiluwedu/escape#readme",
   "dependencies": {
     "babel-core": "^6.24.1",
     "babel-loader": "^6.4.1",
