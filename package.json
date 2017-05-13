@@ -1,7 +1,7 @@
 {
   "name": "esc",
   "version": "0.0.1",
-  "description": "Code Share, by Thai-Duong Nguyen",
+  "description": "ESC, by Thai-Duong Nguyen",
   "main": "index.js",
   "scripts": {
     "start": "nodemon server/server.js",
