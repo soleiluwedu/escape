@@ -1,0 +1,45 @@
+body {
+  font-family: Monaco;
+  font-weight: 100;
+  color: lightskyblue;
+  background-color:black;
+}
+
+#title {
+  font-family: Optima;
+  text-align: center;
+}
+
+#editor, #runcode, #output {
+  display: block;  
+  margin: auto;
+  width: 80%;
+}
+
+textarea, button {
+  display: block;
+  font-family: Monaco;
+  margin: 10px auto;
+}
+
+textarea {
+  font-size: 15px;
+  height: 50%;
+  resize: none;
+  width: 80%;
+}
+
+button {
+  background-color: black;
+  border: solid 1px;
+  border-color: cornflowerblue;
+  border-radius: 3px;
+  color: cornflowerblue;
+  font-size: 15px;
+  outline: none;
+}
+
+button:hover {
+  border-color: lightseagreen;
+  color: lightseagreen;
+}

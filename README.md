@@ -1,2 +1,2 @@
-# code-share
+# esc
 A React SPA for sharing and testing code.

@@ -1,0 +1,35 @@
+{
+  "name": "esc",
+  "version": "0.0.1",
+  "description": "Code Share, by Thai-Duong Nguyen",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server/server.js",
+    "build": "webpack --watch --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soleiluwedu/code-share.git"
+  },
+  "keywords": [
+    "define",
+    "things"
+  ],
+  "author": "Thai-Duong Nguyen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/soleiluwedu/code-share/issues"
+  },
+  "homepage": "https://github.com/soleiluwedu/code-share#readme",
+  "dependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^6.4.1",
+    "babel-preset-react": "^6.24.1",
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "nodemon": "^1.11.0",
+    "react": "^15.5.3",
+    "react-dom": "^15.5.3",
+    "webpack": "^2.3.3"
+  }
+}
