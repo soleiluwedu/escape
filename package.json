@@ -1,7 +1,7 @@
 {
   "name": "esc",
   "version": "0.0.1",
-  "description": "ESC, by Thai-Duong Nguyen",
+  "description": "Eval/Stringify/Console.log, by Thai-Duong Nguyen",
   "main": "index.js",
   "scripts": {
     "start": "nodemon server/server.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/soleiluwedu/code-share.git"
+    "url": "git+https://github.com/soleiluwedu/esc.git"
   },
   "keywords": [
     "define",
@@ -18,9 +18,9 @@
   "author": "Thai-Duong Nguyen",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/soleiluwedu/code-share/issues"
+    "url": "https://github.com/soleiluwedu/esc/issues"
   },
-  "homepage": "https://github.com/soleiluwedu/code-share#readme",
+  "homepage": "https://github.com/soleiluwedu/esc#readme",
   "dependencies": {
     "babel-core": "^6.24.1",
     "babel-loader": "^6.4.1",
