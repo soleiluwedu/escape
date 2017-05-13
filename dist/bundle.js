@@ -9617,7 +9617,9 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
   // Stringify data.
   stringify(obj) {
+
     // These data types do not have toString() functionality.
+    // They also will not render properly to a React DOM object as-is.
     switch (obj) {
       case undefined:
         return 'undefined';
@@ -9632,11 +9634,11 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     // Stringify conditionally.
     switch (obj.constructor) {
 
-      // Recursive stringify Object literals.
+      // Recursive stringify any nested Object literals.
       case Object:
         return `{ ${Object.keys(obj).map(key => key + ": " + this.stringify(obj[key]))} }`;
 
-      // Return Array string.
+      // Recursive stringify any nested Array instances.
       case Array:
         return `[${obj.map((e, i) => i !== 0 ? " " + this.stringify(e) : this.stringify(e))}]`;
 
@@ -9648,25 +9650,35 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       case String:
         return `'${obj}'`;
 
-      // All others.
+      // All others need not be stringified
       default:
         return obj;
     }
   }
 
-  // On change of editor.
+  // Keep track of editor text. May come in handy if code-sharing
+  // funtionality is added in the future.
   onchange(e) {
     this.setState({ editorContent: e.target.value });
   }
 
   // When user clicks "Run Code" button.
   runcode() {
+
+    // Variable to refer to evaluated code.
     let evaluated;
+
+    // Try-catch block for evaluating code in case of errors.
     try {
       evaluated = eval(this.state.editorContent);
-    } catch (err) {
+    }
+
+    // If error, output error message and return out of function.
+    catch (err) {
       return this.setState({ outputContent: err.message });
     }
+
+    // Code reachable only without error. Output evaluated code.
     this.setState({ outputContent: this.stringify(evaluated) });
   }
 
@@ -9678,7 +9690,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
         'h1',
         { id: 'title' },
-        'ESC (Eval/Stringify/Console)'
+        'ESC (Eval/Stringify/Console.log)'
       ),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__editor_jsx__["a" /* default */], { onchange: this.onchange }),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_4__button_jsx__["a" /* default */], { onclick: this.runcode, btnID: 'runcode', text: 'Run Code' }),
