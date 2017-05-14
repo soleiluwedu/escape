@@ -9545,15 +9545,54 @@ const Button = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElem
 
 
 // Editor Component shows code inputted / editted by user(s).
-const Editor = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-  'div',
-  { id: props.editorId },
-  __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-    'textarea',
-    { onChange: e => props.onchange(e) },
-    props.content
-  )
-);
+class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
+  constructor(props) {
+    super(props);
+    // Local state used for editor-specific settings like key-specific behavior.
+    this.state = {
+      // How many spaces to add on a tab keydown.
+      editorTabSpaces: 2
+    };
+  }
+
+  // Needed for any key-specific functionality.
+  onkeydown(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+
+      // Saving selection.
+      const selStart = e.target.selectionStart;
+      const selEnd = e.target.selectionEnd;
+
+      // Adding spaces.
+      let newContent = e.target.value.slice(0, selStart);
+      for (let i = 0; i < this.state.editorTabSpaces; i++) newContent += ' ';
+      newContent += e.target.value.slice(selStart);
+      e.target.value = newContent;
+
+      // Resetting selection according to new content.
+      e.target.selectionStart = selStart + this.state.editorTabSpaces;
+      e.target.selectionEnd = selEnd + this.state.editorTabSpaces;
+    }
+  }
+
+  render() {
+    return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+      'div',
+      { id: this.props.editorId },
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        'textarea',
+        {
+          // Should be passed from parent component to report textarea value.  
+          onChange: e => this.props.onchange(e)
+          // Local method used for key-specific functionality.
+          , onKeyDown: e => this.onkeydown(e)
+        },
+        this.props.content
+      )
+    );
+  }
+}
 
 /* harmony default export */ __webpack_exports__["a"] = (Editor);
 
@@ -9608,11 +9647,34 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
   constructor(props) {
     super(props);
     this.state = {
+      // Value of editor textarea.
       editorContent: '',
+
+      // Value of Output Component's div.
       outputContent: ''
     };
+
+    // Bind functions that will be passed to children components.
     this.onchange = this.onchange.bind(this);
+    this.onkeydown = this.onkeydown.bind(this);
     this.runcode = this.runcode.bind(this);
+  }
+
+  // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
+  onchange(e) {
+    this.setState({ editorContent: e.target.value });
+  }
+
+  // Needed for any key-specific functionality.
+  onkeydown(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const selStart = e.target.selectionStart;
+      const selEnd = e.target.selectionEnd;
+      e.target.value = e.target.value.slice(0, selStart) + '  ' + e.target.value.slice(selStart);
+      e.target.selectionStart = selStart + this.state.editorTabSpaces;
+      e.target.selectionEnd = selEnd + this.state.editorTabSpaces;
+    }
   }
 
   // Stringify data.
@@ -9630,16 +9692,16 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         return 'false';
     }
 
-    // Stringify conditionally.
+    // Stringify conditionally and possibly recursively according to data type.
     switch (obj.constructor) {
 
       // Recursive stringify any nested Object literals.
       case Object:
-        return `{ ${Object.keys(obj).map(key => key + ": " + this.stringify(obj[key]))} }`;
+        return `{ ${Object.keys(obj).map((key, i) => (i === 0 ? '' : ' ') + key + ": " + this.stringify(obj[key]))} }`;
 
       // Recursive stringify any nested Array instances.
       case Array:
-        return `[${obj.map((e, i) => i !== 0 ? " " + this.stringify(e) : this.stringify(e))}]`;
+        return `[${obj.map((e, i) => (i === 0 ? '' : ' ') + this.stringify(e))}]`;
 
       // Functions have toString() functionality.
       case Function:
@@ -9652,12 +9714,8 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       // All others need not be stringified
       default:
         return obj;
-    }
-  }
 
-  // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
-  onchange(e) {
-    this.setState({ editorContent: e.target.value });
+    }
   }
 
   // When user clicks "Run Code" button.
@@ -9690,7 +9748,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         { id: 'title' },
         'Eval/Stringify/Console.log: A Programmer\'s Editor'
       ),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__editor_jsx__["a" /* default */], { onchange: this.onchange, editorId: 'editor' }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__editor_jsx__["a" /* default */], { onchange: this.onchange, onkeydown: this.onkeydown, editorId: 'editor' }),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__button_jsx__["a" /* default */], { onclick: this.runcode, btnClass: 'btnClass', btnID: 'runcode', text: 'Run Code' }),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_4__output_jsx__["a" /* default */], { content: this.state.outputContent, outputId: 'output' })
     );

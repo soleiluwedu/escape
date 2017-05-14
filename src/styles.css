@@ -17,9 +17,14 @@ body {
 }
 
 textarea, button {
+  background-color: black;
+  border: 1px solid lightsteelblue;
+  border-radius: 6px;
+  color: lightblue;
   display: block;
   font-family: Monaco;
   margin: 10px auto;
+  outline: none;
 }
 
 textarea {
@@ -33,7 +38,7 @@ button {
   background-color: black;
   border: solid 1px;
   border-color: cornflowerblue;
-  border-radius: 3px;
+  border-radius: 6px;
   color: cornflowerblue;
   font-size: 15px;
   outline: none;
