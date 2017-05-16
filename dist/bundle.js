@@ -9637,6 +9637,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__editor_jsx__ = __webpack_require__(82);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__button_jsx__ = __webpack_require__(81);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__output_jsx__ = __webpack_require__(83);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__unlace__ = __webpack_require__(185);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__unlace___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__unlace__);
+
 
 
 
@@ -9678,44 +9681,8 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
   }
 
   // Stringify data.
-  stringify(obj) {
-
-    // These data types do not have toString() functionality and do not render properly to a React DOM.
-    switch (obj) {
-      case undefined:
-        return 'undefined';
-      case null:
-        return 'null';
-      case true:
-        return 'true';
-      case false:
-        return 'false';
-    }
-
-    // Stringify conditionally and possibly recursively according to data type.
-    switch (obj.constructor) {
-
-      // Recursive stringify any nested Object literals.
-      case Object:
-        return `{ ${Object.keys(obj).map((key, i) => (i === 0 ? '' : ' ') + key + ": " + this.stringify(obj[key]))} }`;
-
-      // Recursive stringify any nested Array instances.
-      case Array:
-        return `[${obj.map((e, i) => (i === 0 ? '' : ' ') + this.stringify(e))}]`;
-
-      // Functions have toString() functionality.
-      case Function:
-        return obj.toString();
-
-      // Strings need quotes.
-      case String:
-        return `'${obj}'`;
-
-      // All others need not be stringified
-      default:
-        return obj;
-
-    }
+  stringify(data) {
+    return __WEBPACK_IMPORTED_MODULE_5__unlace___default()(data);
   }
 
   // When user clicks "Run Code" button.
@@ -9731,7 +9698,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
     // If error, output error message and return out of function.
     catch (err) {
-      return this.setState({ outputContent: err.message });
+      return this.stringify({ outputContent: err.message });
     }
 
     // Code reachable only without error. Output evaluated code.
@@ -22243,6 +22210,47 @@ function traverseAllChildren(children, callback, traverseContext) {
 
 module.exports = traverseAllChildren;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+
+/***/ }),
+/* 185 */
+/***/ (function(module, exports) {
+
+// Stringify data.
+function unlace(data) {
+
+  // These data types do not have toString() functionality and do not render properly to a React DOM.
+  switch (data) {
+    case undefined:
+      return 'undefined';
+    case null:
+      return 'null';
+    case true:
+      return 'true';
+    case false:
+      return 'false';
+  }
+
+  // Stringify conditionally and possibly recursively according to data type.
+  switch (typeof data) {
+
+    case 'object':
+      // Recursive stringify any nested Array instances.
+      if (Array.isArray(data)) return `[${data.map((e, i) => (i === 0 ? '' : ' ') + unlace(e))}]`;
+      // Recursive stringify any nested Object literals.
+      else return `{ ${Object.keys(data).map((key, i) => (i === 0 ? '' : ' ') + key + ": " + unlace(data[key]))} }`;
+
+    // Strings need quotes.
+    case 'string':
+      return `'${data}'`;
+
+    // All others, including Functions, will be stringified with toString().
+    default:
+      return data.toString();
+
+  }
+}
+
+module.exports = unlace;
 
 /***/ })
 /******/ ]);
