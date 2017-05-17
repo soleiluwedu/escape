@@ -24,9 +24,7 @@ class App extends Component {
   }
 
   // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
-  onchange(e) {
-    this.setState({ editorContent: e.target.value });
-  }
+  onchange(e) { this.setState({ editorContent: e.target.value }); }
 
   // Needed for any key-specific functionality.
   onkeydown(e) {
@@ -42,38 +40,33 @@ class App extends Component {
 
 
   // Stringify data.
-  stringify(data) {
-    return unlace(data);
+  stringify(data) { return unlace(data); }
+
+  // When user clicks "Run Code" button.
+  runcode() {
+
+    // Try-catch block for evaluating code in case of errors.
+    try { var evaluated = this.stringify(eval(this.state.editorContent)); }
+
+    // If error, output error message and return out of function.
+    catch (err) { evaluated = err.message; }
+
+    // Code reachable only without error. Output evaluated code.
+    this.setState({ outputContent: evaluated });
+
   }
 
-// When user clicks "Run Code" button.
-runcode() {
-
-  // Variable to refer to evaluated code.
-  let evaluated;
-
-  // Try-catch block for evaluating code in case of errors.
-  try { evaluated = eval(this.state.editorContent); }
-
-  // If error, output error message and return out of function.
-  catch (err) { return this.stringify({ outputContent: err.message }); }
-
-  // Code reachable only without error. Output evaluated code.
-  this.setState({ outputContent: this.stringify(evaluated) });
-
-}
-
-// Render code editor and console output.
-render() {
-  return (
-    <div id="app">
-      <h1 id="title">Eval/Stringify/Console.log: A Programmer's Editor</h1>
-      <Editor onchange={this.onchange} onkeydown={this.onkeydown} editorId="editor" />
-      <Button onclick={this.runcode} btnClass="btnClass" btnID="runcode" text="Run Code" />
-      <Output content={this.state.outputContent} outputId="output" />
-    </div>
-  )
-}
+  // Render code editor and console output.
+  render() {
+    return (
+      <div id="app">
+        <h1 id="title">Eval/Stringify/Console.log: A Programmer's Editor</h1>
+        <Editor onchange={this.onchange} onkeydown={this.onkeydown} editorId="editor" />
+        <Button onclick={this.runcode} btnClass="btnClass" btnID="runcode" text="Run Code" />
+        <Output content={this.state.outputContent} outputId="output" />
+      </div>
+    )
+  }
 }
 
 render(<App />, document.getElementById('x'));
