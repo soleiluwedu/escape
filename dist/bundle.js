@@ -9633,7 +9633,7 @@ function unlace(data) {
       return 'false';
   }
 
-  // Stringify conditionally and possibly recursively according to data type.
+  // Stringify conditionalÍly and possibly recursively according to data type.
   switch (typeof data) {
 
     case 'object':
