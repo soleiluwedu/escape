@@ -41,10 +41,10 @@ self.addEventListener("message", e => {
   console.log = (...args) => log += args.map(e => unlace(e)).join(' ') + '\n';
 
   // Monkeypatch setTimeout to call another web worker to eval callback.
-  setTimeout = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawn', content: `(${func.bind(this)})()` }), wait);
+  setTimeout = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawn', content: `(${func})()` }), wait);
 
   // Monkeypatch setInterval to call another web worker to eval callback.
-  setInterval = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawnInterval', content: `(${func.bind(this)})()`, wait: wait }), wait);
+  setInterval = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawnInterval', content: `(${func})()`, wait: wait }), wait);
 
   try {
     // Eval code.
