@@ -8,6 +8,7 @@ body {
 #title {
   font-family: "Courier New";
   font-weight: 100;
+  color: steelblue;
   text-align: center;
 }
 
@@ -29,7 +30,7 @@ ul {
 
 textarea, button {
   background-color: black;
-  border: 1px solid lightsteelblue;
+  border: 1px solid steelblue;
   border-radius: 6px;
   color: lightseagreen;
   display: block;
@@ -48,9 +49,9 @@ textarea {
 button {
   background-color: black;
   border: solid 1px;
-  border-color: cornflowerblue;
+  border-color: steelblue;
   border-radius: 6px;
-  color: cornflowerblue;
+  color: steelblue;
   font-size: 16px;
   outline: none;
 }

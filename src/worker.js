@@ -1,4 +1,4 @@
-// Stringify data. Function is available o
+// Stringify data. Function is available on GitHub as a standalone repo.
 function unlace(data) {
 
   // These data types do not have toString() functionality.

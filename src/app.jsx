@@ -53,7 +53,7 @@ class App extends Component {
 
   // When user clicks "Run Code" button.
   runcode() {
-    if (this.state.working) return this.setState({ outputContent: 'Previous Run Code command is still executing.' });
+    if (this.state.working) return this.setState({ outputContent: 'Previous Run Code command still executing.' });
     this.setState({ working: true });
     this.evalWithWorker(this.state.editorContent);
   }
