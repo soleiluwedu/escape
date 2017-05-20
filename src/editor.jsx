@@ -16,7 +16,7 @@ class Editor extends Component {
     if (e.key === 'Tab') {
       e.preventDefault();
 
-      // Saving selection.
+      // Saving selection end points.
       const selStart = e.target.selectionStart;
       const selEnd = e.target.selectionEnd;
 
@@ -36,7 +36,7 @@ class Editor extends Component {
     return (
       <div id={this.props.editorId}>
         <textarea
-          // Should be passed from parent component to report textarea value.  
+          // Should be passed from parent component to report textarea value on change.
           onChange={e => this.props.onchange(e)}
           // Local method used for key-specific functionality.
           onKeyDown={e => this.onkeydown(e)}

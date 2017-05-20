@@ -1,34 +1,45 @@
 body {
-  font-family: Monaco;
+  font-family: "Courier New";
   font-weight: 100;
-  color: lightskyblue;
+  color: cornflowerblue;
   background-color:black;
 }
 
 #title {
-  font-family: Optima;
+  font-family: "Courier New";
+  font-weight: 100;
   text-align: center;
 }
 
 #editor, #runcode, #output {
-  display: block;  
+  display: block;
   margin: auto;
+  padding: 0;
   width: 80%;
+}
+
+#output {
+  font-size: 20px;
+}
+
+ul {
+  padding: 0;
+  list-style-type: none;
 }
 
 textarea, button {
   background-color: black;
   border: 1px solid lightsteelblue;
   border-radius: 6px;
-  color: lightblue;
+  color: lightseagreen;
   display: block;
-  font-family: Monaco;
+  font-family: "Courier New";
   margin: 10px auto;
   outline: none;
 }
 
 textarea {
-  font-size: 15px;
+  font-size: 20px;
   height: 50%;
   resize: none;
   width: 100%;
@@ -40,7 +51,7 @@ button {
   border-color: cornflowerblue;
   border-radius: 6px;
   color: cornflowerblue;
-  font-size: 15px;
+  font-size: 16px;
   outline: none;
 }
 
