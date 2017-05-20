@@ -7,7 +7,7 @@ function unlace(data) {
     case null: return 'null';
   }
 
-  // Stringify conditionalÍly and possibly recursively according to data type.
+  // Stringify conditionally and possibly recursively according to data type.
   switch (typeof data) {
 
     case 'object':
@@ -16,7 +16,7 @@ function unlace(data) {
       // Recursive stringify any nested Object literals.
       else return `{ ${Object.keys(data).map(key => key + ": " + unlace(data[key])).join(', ')} }`;
 
-    // Strings need quotes.
+    // Strings get wrapped in quotes to be distinguished from other data types.
     case 'string': return `'${data}'`;
 
     // All others, including Functions, will be stringified with toString().
@@ -27,7 +27,7 @@ function unlace(data) {
 }
 
 // On receipt of data, eval code and send back one string containing all console.logs.
-self.addEventListener("message", function (e) {
+self.addEventListener("message", e => {
 
   // Save original console.log.
   console.origLog = console.log;
