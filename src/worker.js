@@ -7,19 +7,19 @@ function unlace(data) {
     case null: return 'null';
   }
 
-  // Stringify conditionally and possibly recursively according to data type.
+  // Conditionally stringify according to data type.
   switch (typeof data) {
 
     case 'object':
-      // Recursive stringify any nested Array instances.
+      // Recursively stringify any nested Array instances.
       if (Array.isArray(data)) return `[${data.map(e => unlace(e)).join(', ')}]`;
-      // Recursive stringify any nested Object literals.
+      // Recursively stringify any nested Object literals.
       else return `{ ${Object.keys(data).map(key => key + ": " + unlace(data[key])).join(', ')} }`;
 
     // Strings get wrapped in quotes to be distinguished from other data types.
     case 'string': return `'${data}'`;
 
-    // All others, including Functions, will be stringified with toString().
+    // All others will be stringified with toString().
     default: return data.toString();
 
   }
@@ -29,25 +29,34 @@ function unlace(data) {
 // On receipt of data, eval code and send back one string containing all console.logs.
 self.addEventListener("message", e => {
 
-  // Save original console.log.
+  // Save original functions.
   console.origLog = console.log;
+  origSetTimeout = setTimeout;
+  origSetInterval = setInterval;
 
   // One string to contain all console.logs in code.
   let log = '';
 
-  // Monkeypatch console.log to collect arguments passed into it.
+  // Monkeypatch console.log to collect arguments and post message containing all arguments.
   console.log = (...args) => log += args.map(e => unlace(e)).join(' ') + '\n';
 
-  // Eval code.
-  try { eval(e.data); }
+  // Monkeypatch setTimeout to call another web worker to eval callback.
+  setTimeout = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawn', content: `(${func.bind(this)})()` }), wait);
+
+  // Monkeypatch setInterval to call another web worker to eval callback.
+  setInterval = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawnInterval', content: `(${func.bind(this)})()`, wait: wait }), wait);
+
+  try {
+    // Eval code.
+    eval(e.data);
+    // Post all console.log content as message.
+    e.srcElement.postMessage({ action: 'addline', content: log });
+  }
 
   // Catch errors.
-  catch (err) { var error = err.message; }
+  catch (err) { e.srcElement.postMessage({ action: 'addline', content: `Error: ${err.message}\n` }); }
 
-  // Sending either error or console.log outputs back to main script.
-  finally { e.srcElement.postMessage(error ? error : log); }
-
-  // Restore console.log.
-  console.log = console.origLog;
+  // Notify main script that worker is finished.
+  finally { e.srcElement.postMessage({ action: 'finish' }); }
 
 });
