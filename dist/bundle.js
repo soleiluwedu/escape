@@ -9555,7 +9555,7 @@ class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     };
   }
 
-  // Needed for any key-specific functionality.
+  // Needed for any key-press-specific functionality.
   onkeydown(e) {
     if (e.key === 'Tab') {
       e.preventDefault();

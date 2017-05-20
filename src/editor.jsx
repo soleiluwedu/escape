@@ -11,7 +11,7 @@ class Editor extends Component {
     };
   }
 
-  // Needed for any key-specific functionality.
+  // Needed for any key-press-specific functionality.
   onkeydown(e) {
     if (e.key === 'Tab') {
       e.preventDefault();
