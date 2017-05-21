@@ -32,7 +32,6 @@ textarea, button {
   background-color: black;
   border: 1px solid steelblue;
   border-radius: 6px;
-  color: lightseagreen;
   display: block;
   font-family: "Courier New";
   margin: 10px auto;
@@ -40,6 +39,7 @@ textarea, button {
 }
 
 textarea {
+  color: lightseagreen;
   font-size: 20px;
   height: 50%;
   resize: none;
@@ -47,13 +47,9 @@ textarea {
 }
 
 button {
-  background-color: black;
-  border: solid 1px;
   border-color: steelblue;
-  border-radius: 6px;
   color: steelblue;
   font-size: 20px;
-  outline: none;
 }
 
 button:hover {

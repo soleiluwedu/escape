@@ -43,12 +43,21 @@ self.addEventListener("message", e => {
   // Monkeypatch setTimeout to call another web worker to eval callback.
   setTimeout = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawn', content: `(${func})()` }), wait);
 
-  // Monkeypatch setInterval to call another web worker to eval callback.
-  setInterval = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawnInterval', content: `(${func})()`, wait: wait }), wait);
+  // Monkeypatch setInterval to use setTimeout call another web worker to eval callback. This will enforce safety checks on each execution.
+  setInterval = (func, wait) => origSetTimeout(() => e.srcElement.postMessage({ action: 'spawnInterval', func: func.toString(), wait }), wait);
 
   try {
-    // Eval code.
-    eval(e.data);
+    switch (e.data.command) {
+      // Eval code.
+      case 'eval': eval(e.data.payload); break;
+
+      // Eval a given function and use the monkeypatched setInterval function to repeact functionality.
+      case 'setInterval':
+        eval(`(${e.data.func})()`);
+        var id = setInterval(e.data.func, e.data.wait);
+        break;
+    }
+
     // Post all console.log content as message.
     e.srcElement.postMessage({ action: 'addline', content: log });
   }
@@ -57,6 +66,11 @@ self.addEventListener("message", e => {
   catch (err) { e.srcElement.postMessage({ action: 'addline', content: `Error: ${err.message}\n` }); }
 
   // Notify main script that worker is finished.
-  finally { e.srcElement.postMessage({ action: 'finish' }); }
+  finally {
+    switch (e.data.command) {
+      case 'setInterval': return e.srcElement.postMessage({ action: 'finishSetInterval', id, wait: e.data.wait });
+      default: return e.srcElement.postMessage({ action: 'finish' });
+    }
+  }
 
 });

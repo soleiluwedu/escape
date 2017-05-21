@@ -35,7 +35,7 @@ class App extends Component {
   }
 
   // Creates worker to eval code without risk of crashing main script.
-  evalWithWorker(code) {
+  evalWithWorker(commandObj) {
 
     // Unique ID to track worker status. Increment main count after saving ID.
     const id = this.shadowState.nextID++;
@@ -50,9 +50,19 @@ class App extends Component {
     // Update output upon worker response.
     evalWorker.addEventListener('message', response => {
       switch (response.data.action) {
+        // Render one more line of output.
         case 'addline': return this.renderOutput(this.state.outputContent + response.data.content);
-        case 'spawn': return this.evalWithWorker(response.data.content);
-        case 'spawnInterval': return this.evalWithWorker(`${response.data.content}; setInterval(() => { ${response.data.content} }, ${response.data.wait})`);
+
+        // Spawn a new worker once. Used for setTimeout.
+        case 'spawn': return this.evalWithWorker({ command: 'eval', payload: response.data.content });
+
+        // Spawn a new worker continuously with setInterval.
+        case 'spawnInterval': return this.evalWithWorker({ command: 'setInterval', func: response.data.func, wait: response.data.wait });
+        
+        // Use setTimeout to kill a workers so we do not build up total number of workers. Omit break or return to fall to next line.
+        case 'finishSetInterval': setTimeout(() => evalWorker.terminate(), response.data.wait);
+        
+        // Worker 'finish' and 'finishSetInterval' responses BOTH trigger shadowState updates.
         case 'finish':
           this.shadowState.workerStatuses[id] = false;
           this.shadowState.totalActive--;
@@ -60,8 +70,8 @@ class App extends Component {
       }
     });
 
-    // Passing code to worker to eval it.
-    evalWorker.postMessage(code);
+    // Passing command object to worker to eval code.
+    evalWorker.postMessage(commandObj);
 
     // Kill worker after half a second if it is still working.
     setTimeout(() => {
@@ -69,7 +79,7 @@ class App extends Component {
         evalWorker.terminate();
         this.shadowState.workerStatuses[id] = false;
         this.shadowState.totalActive--;
-        this.renderOutput('Error: Code timed out.');
+        this.renderOutput(this.state.outputContent + 'Error: Code timed out.\n');
       }
     }, 500);
   }
@@ -84,7 +94,7 @@ class App extends Component {
   runcode() {
     if (this.shadowState.totalActive) return this.renderOutput('Error: Previous Run Code command still executing.');
     this.renderOutput('');
-    this.evalWithWorker(this.state.editorContent);
+    this.evalWithWorker({ command: 'eval', payload: this.state.editorContent });
   }
 
   // Render code editor and console output.
