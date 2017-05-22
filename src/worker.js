@@ -5,8 +5,22 @@
 // Stringify data to optimize inspection of JavaScript expressions.
 function unlace(data) {
 
-  // Disallow access to worker context for security.
-  if (data === this) return '[restricted]';
+  // Disallow access for security.
+  switch (data) {
+
+    // Expressions blocked to prevent users from getting too curious.
+    case onmessage:
+    case unlace:
+    case ConsoleMonkey:
+    case monkeyPatchAsync: return 'undefined';
+    case console:
+    case console.log:
+    case console.error: return '(console object restricted)';
+    case this: return '(this keyword restricted)';
+    case setTimeout: return '(setTimeout function restricted)';
+    case setInterval: return '(setInterval function restricted)';
+
+  } // End switch block on data for blocked expressions.
 
   // These data types do not have toString() functionality.
   switch (data) {
