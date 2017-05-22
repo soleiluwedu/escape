@@ -5,7 +5,7 @@
 // Stringify data to optimize inspection of JavaScript expressions.
 function unlace(data) {
 
-  // Disallow access to 'this' for security.
+  // Disallow access to worker context for security.
   if (data === this) return '[restricted]';
 
   // These data types do not have toString() functionality.
