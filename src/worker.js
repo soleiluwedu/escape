@@ -42,7 +42,7 @@ self.onmessage = briefing => {
   let log = '';
 
   // Monkeypatch console.log to simply collect arguments into 'log' variable.
-  console.log = (...args) => log += args.map(e => unlace(e)).join(' ') + '\n';
+  console.log = (...args) => log += args.map(e => e === this ? undefined : unlace(e)).join(' ') + '\n';
 
   // Eval code.
   try { eval(briefing.data); }
@@ -55,7 +55,8 @@ self.onmessage = briefing => {
 
   // In between messages received (which occur on Run Code command), monkeypatch console.log
   // to immediately post messages. Otherwise async operations cannot console.log.
-  // Trade-off is that infinite loops inside async operations will crash page.
-  console.log = (...args) => self.postMessage(args.map(e => unlace(e)).join(' ') + '\n');
+  // Trade-off is that allowing users to cause a postMessage on every console.log allows for
+  // infinite loops from inside async operations that will hang up or crash the main script.
+  console.log = (...args) => self.postMessage(args.map(e => e === this ? undefined : unlace(e)).join(' ') + '\n');
 
 };
