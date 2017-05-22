@@ -9688,16 +9688,29 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     }; // End this.shadowState object.
 
     // Bind methods that will be passed to children components.
-
-    // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
     this.onchange = this.onchange.bind(this);
-
-    // When "Run Code" button is clicked, clear Output Component and brief asset.
-    this.runcode = this.runcode.bind(this);
-
-    // Render output to Output Component.
+    this.runCode = this.runCode.bind(this);
     this.renderOutput = this.renderOutput.bind(this);
+    this.endCode = this.endCode.bind(this);
+
+    // Save originals of functions that assets are trained to monkeypatch them.
+    this.origLog = console.log;
+    this.origSetTimeout = setTimeout;
+    this.origSetInterval = setInterval;
   } // End main constructor method.
+
+  // Restore functions that assets are trained to monkeypatch: console.log, setTimeout, and setInterval.
+  restoreMonkeypatches() {
+
+    // Assets monkeypatch console.log to limit messages sent to main script in case of infinite loops.
+    console.log = this.origLog;
+
+    // Assets monkeypatch setTimeout to try-catch the callback.
+    setTimeout = this.origSetTimeout;
+
+    // Assets monkeypatch setInterval to try-catch the callback.
+    setInterval = this.origSetInterval;
+  } // End restoreMonkeypatches method.
 
   // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
   onchange(e) {
@@ -9705,14 +9718,24 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
   }
 
   // When "Run Code" button is clicked, clear Output Component and brief asset.
-  runcode() {
+  runCode() {
 
     // Clear Output Component's content.
     this.renderOutput('');
 
     // Send Editor Component's content to asset as mission briefing.
     this.briefAsset(this.state.editorContent);
-  } // End runcode method.
+  } // End runCode method.
+
+  // When "End Code" button is clicked, kill asset and put out a PR statement.
+  endCode() {
+
+    // End asset's contract in the most permanent manner possible.
+    this.killAsset();
+
+    // Put out a PR statement.
+    this.renderOutput(this.state.outputContent + 'Code ended.\n');
+  } // End endCode method.
 
   // Render output to Output Component.
   renderOutput(output) {
@@ -9734,6 +9757,9 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       // Cancel hit.
       clearTimeout(this.shadowState.assassinID);
 
+      // Restore monkeypatched functions.
+      this.restoreMonkeypatches();
+
       // Deliver report from asset.
       return this.renderOutput(this.state.outputContent + report.data);
     }; // End this.shadowState.asset.onmessage method.
@@ -9752,23 +9778,31 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.assassinStandby();
   } // End briefAsset method.
 
+  // Eliminate asset.
+  killAsset() {
+
+    // Assassinate asset.
+    this.shadowState.asset.terminate();
+
+    // Update record to indicate no assets currently deployed.
+    this.shadowState.assetDeployed = false;
+
+    // Restore monkeypatched functions.
+    this.restoreMonkeypatches();
+
+    // Put out a public statement covering up the incident.
+    this.renderOutput('Code timed out.');
+  } // End killAsset method.
+
   // Activate assassin to eliminate asset upon lack of timely report.
   assassinStandby() {
 
     // Save setTimeout ID of assassin to allow cancellation.
     this.shadowState.assassinID = setTimeout(() => {
 
-      // Assassinate asset.
-      this.shadowState.asset.terminate();
-
-      // Update record to indicate no assets currently deployed.
-      this.shadowState.assetDeployed = false;
-
-      // Put out a public statement covering up the incident.
-      this.renderOutput('Code timed out.');
-
-      // setTimeout delay: Asset must report back in time or be eliminated.
-    }, this.shadowState.deadline);
+      // Eliminate asset.
+      this.killAsset();
+    }, this.shadowState.deadline); // End setTimeout invocation.
   } // End assassinStandby method.
 
   // Render code editor (Editor Component) and console output (Output Component).
@@ -9817,7 +9851,8 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         'ditor'
       ),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_2__editor_jsx__["a" /* default */], { onchange: this.onchange, onkeydown: this.onkeydown, editorId: 'editor' }),
-      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__button_jsx__["a" /* default */], { onclick: this.runcode, btnClass: 'btnClass', btnID: 'runcode', text: 'Run Code' }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__button_jsx__["a" /* default */], { onclick: this.runCode, btnClass: 'btnClass', btnID: 'runcode', text: 'Run Code' }),
+      __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_3__button_jsx__["a" /* default */], { onclick: this.endCode, btnClass: 'btnClass', btnID: 'endcode', text: 'End Code' }),
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_4__output_jsx__["a" /* default */], { content: this.state.outputContent, outputId: 'output' })
     );
   } // End render method.
