@@ -9829,14 +9829,38 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     // Protocol for receipt of report from asset.
     this.shadowState.asset.onmessage = report => {
 
-      // Cancel hit.
-      clearTimeout(this.shadowState.assassinID);
+      switch (report.data.action) {
+
+        // Asset reports successful execution of code.
+        case 'success':
+
+        // Asset reports error during execution of code.
+        case 'failure':
+
+          // Stand down assassin.
+          this.assassinStandDown();
+
+          // Publish statement regarding mission.
+          this.renderOutput(this.state.outputContent + report.data.content);
+
+          // Break to avoid initiating below protocols.
+          break;
+
+        // Asset reports beginning of a new, asynchronous mission.
+        case 'async':
+
+          // Stand down assassin.
+          this.assassinStandDown();
+
+          // Put new assassin on standby.
+          this.assassinStandby();
+
+          // Break to avoid initiating below protocols.
+          break;
+      }
 
       // Restore monkeypatched functions.
       this.theManInTheYellowHat();
-
-      // Deliver report from asset.
-      return this.renderOutput(this.state.outputContent + report.data);
     }; // End this.shadowState.asset.onmessage method.
   } // End deployAsset method.
 
@@ -9874,8 +9898,19 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.theManInTheYellowHat();
 
     // Put out a public statement covering up the incident.
-    this.renderOutput('Code timed out.');
+    this.renderOutput(this.state.outputContent + 'Code timed out. Any pending console.log output voided.\n');
   } // End killAsset method.
+
+  /***************************
+   * App.assassinStandDown
+  ***************************/
+
+  // Cancel assassination mission.
+  assassinStandDown() {
+
+    // Call off the hit.
+    clearTimeout(this.shadowState.assassinID);
+  } // End assassinStandDown method.
 
   /***************************
    * App.assassinStandby

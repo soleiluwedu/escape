@@ -42,14 +42,17 @@ function unlace(data) {
  * ConsoleLog class
 ***************************/
 
-// class ConsoleLog used to make logging functions so console.log can be monkeypatched.
-function ConsoleLog() {
+// class ConsoleLog accepts context (which will be 'this') and returns object functions so console.log can be monkeypatched.
+function ConsoleLog(context) {
+
+  // Expressions restricted from being logged. Pass in 'this' to be referred to as 'context' in class methods.
+  this.restricted = [context];
 
   // All log output saved together as one large string.
   this.fullLog = '';
 
   // Log method to be used as monkeypatch for console.log. Saves logs to this.fullLog.
-  this.log = (...args) => this.fullLog += args.map(e => e === this ? undefined : unlace(e)).join(' ') + '\n';
+  this.log = (...args) => this.fullLog += args.map(e => this.restricted.indexOf(e) > -1 ? '[Restricted]' : unlace(e)).join(' ') + '\n';
 
 } // End ConsoleLog class.
 
@@ -57,26 +60,29 @@ function ConsoleLog() {
  * monkeyPatchAsync
 ***************************/
 
-// Accept async function and create new function to try-catch callback and send one console.log output string.
+// Accept async func => create new func to time and try-catch callback, then post one console.log output string.
 const monkeyPatchAsync = asyncFunc => (func, wait) => {
 
   // Return original asynchronous function so any ID (like setTimeout ID or setInterval ID) is returned.
   return asyncFunc(() => {
 
     // Instantiate new instance of ConsoleLog class to monkeypatch async console.log invocations.
-    const asyncLog = new ConsoleLog;
+    const asyncLog = new ConsoleLog(this);
 
     // Monkeypatch console.log in async callback to collect all console.logs into one string.
     console.log = asyncLog.log;
+
+    // Report beginning of async operation back to main script to be timed on execution.
+    self.postMessage({ action: 'async' });
 
     // Try callback.
     try { func(); }
 
     // Catch and report error in callback if any.
-    catch (err) { self.postMessage(`Error in asynchronous callback: ${err.message}\n`); }
+    catch (err) { self.postMessage({ action: 'failure', content: `Error in asynchronous callback: ${err.message}\n` }); }
 
     // Report one string containing all console.logs compiled together.
-    finally { self.postMessage(asyncLog.fullLog); }
+    finally { self.postMessage({ action: 'success', content: asyncLog.fullLog }); }
 
   }, wait); // End asyncFunc invocation.
 
@@ -87,10 +93,10 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
 ***************************/
 
 // On receipt of data, eval code and send back one string containing all console.logs.
-self.onmessage = briefing => {
+self.onmessage = e => {
 
   // Instantiate new instance of ConsoleLog class to monkeypatch worker console.log invocations.
-  const workerLog = new ConsoleLog;
+  const workerLog = new ConsoleLog(this);
 
   // Monkeypatch console.log to send back one string containing all worker console.logs.
   console.log = workerLog.log;
@@ -102,12 +108,12 @@ self.onmessage = briefing => {
   setInterval = monkeyPatchAsync(setInterval);
 
   // Eval code sent from main script.
-  try { eval(briefing.data); }
+  try { eval(e.data); }
 
   // Catch and report error in code if any.
-  catch (err) { self.postMessage(`Error: ${err.message}\n`); }
+  catch (err) { self.postMessage({ action: 'failure', content: `Error: ${err.message}\n` }); }
 
   // Report one string containing all console.logs compiled together.
-  finally { self.postMessage(workerLog.fullLog); }
+  finally { self.postMessage({ action: 'success', content: workerLog.fullLog }); }
 
 } // End self.onmessage.
