@@ -4,12 +4,20 @@ import Editor from './editor.jsx';
 import Button from './button.jsx';
 import Output from './output.jsx';
 
+/***************************
+ * App Component
+***************************/
+
 class App extends Component {
+
+  /***************************
+  * App.constructor
+  ***************************/
 
   // Main constructor method.
   constructor(props) {
 
-    // Included for good practice, not out of necessity.
+    // Props included for good practice, not out of necessity.
     super(props);
 
     // Standard React this.state. Contains information collected from or outputted to DOM.
@@ -53,8 +61,12 @@ class App extends Component {
 
   } // End main constructor method.
 
-  // Restore functions that assets are trained to monkeypatch: console.log, setTimeout, and setInterval.
-  restoreMonkeypatches() {
+  /***************************
+   * App.theManInTheYellowHat
+  ***************************/
+
+  // Restore functions that assets are trained to monkeypatch. Named after Curious George's caretaker.
+  theManInTheYellowHat() {
 
     // Assets monkeypatch console.log to limit messages sent to main script in case of infinite loops.
     console.log = this.origLog;
@@ -65,10 +77,18 @@ class App extends Component {
     // Assets monkeypatch setInterval to try-catch the callback.
     setInterval = this.origSetInterval;
 
-  } // End restoreMonkeypatches method.
+  } // End theManInTheYellowHat method.
+
+  /***************************
+   * App.onchange
+  ***************************/
 
   // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
   onchange(e) { this.setState({ editorContent: e.target.value }); }
+
+  /***************************
+   * App.runCode
+  ***************************/
 
   // When "Run Code" button is clicked, clear Output Component and brief asset.
   runCode() {
@@ -81,6 +101,10 @@ class App extends Component {
 
   } // End runCode method.
 
+  /***************************
+   * App.endCode
+  ***************************/
+
   // When "End Code" button is clicked, kill asset and put out a PR statement.
   endCode() {
 
@@ -92,8 +116,16 @@ class App extends Component {
 
   } // End endCode method.
 
+  /***************************
+   * App.renderOutput
+  ***************************/
+
   // Render output to Output Component.
   renderOutput(output) { this.setState({ outputContent: output }); }
+
+  /***************************
+   * App.deployAsset
+  ***************************/
 
   // Deploy asset for initial mission and stay deployed for asynchronous mission creep.
   deployAsset() {
@@ -111,7 +143,7 @@ class App extends Component {
       clearTimeout(this.shadowState.assassinID);
 
       // Restore monkeypatched functions.
-      this.restoreMonkeypatches();
+      this.theManInTheYellowHat();
 
       // Deliver report from asset.
       return this.renderOutput(this.state.outputContent + report.data);
@@ -119,6 +151,10 @@ class App extends Component {
     } // End this.shadowState.asset.onmessage method.
 
   } // End deployAsset method.
+
+  /***************************
+   * App.briefAsset
+  ***************************/
 
   // Brief asset on mission. Deploy new asset first if none are active.
   briefAsset(code) {
@@ -134,6 +170,10 @@ class App extends Component {
 
   } // End briefAsset method.
 
+  /***************************
+   * App.killAsset
+  ***************************/
+
   // Eliminate asset.
   killAsset() {
 
@@ -144,12 +184,16 @@ class App extends Component {
     this.shadowState.assetDeployed = false;
 
     // Restore monkeypatched functions.
-    this.restoreMonkeypatches();
+    this.theManInTheYellowHat();
 
     // Put out a public statement covering up the incident.
     this.renderOutput('Code timed out.');
 
   } // End killAsset method.
+
+  /***************************
+   * App.assassinStandby
+  ***************************/
 
   // Activate assassin to eliminate asset upon lack of timely report.
   assassinStandby() {
@@ -164,6 +208,10 @@ class App extends Component {
 
   } // End assassinStandby method.
 
+  /***************************
+   * App.render
+  ***************************/
+
   // Render code editor (Editor Component) and console output (Output Component).
   render() {
     return (
@@ -174,9 +222,10 @@ class App extends Component {
         <Button onclick={this.endCode} btnClass="btnClass" btnID="endcode" text="End Code" />
         <Output content={this.state.outputContent} outputId="output" />
       </div>
-    )
+    );
   } // End render method.
-} // End App Component class.
+
+} // End App Component.
 
 // Targets div on index.html with id of 'x' as entry point for React App Component.
 render(<App />, document.getElementById('x'));

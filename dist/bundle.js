@@ -9522,7 +9522,7 @@ module.exports = getIteratorFn;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 
 
-// Button Component is a presentation component.
+// Button Component is a presentational component.
 const Button = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
   'div',
   { className: props.btnClass, id: props.btnId },
@@ -9544,38 +9544,76 @@ const Button = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElem
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 
 
+/***************************
+ * Editor Component
+***************************/
+
 // Editor Component shows code inputted / editted by user(s).
 class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
+
+  /***************************
+  * Editor.constructor
+  ***************************/
+
+  // Main constructor method.
   constructor(props) {
+
+    // Props included out of necessity.
     super(props);
+
     // Local state used for editor-specific settings like key-specific behavior.
     this.state = {
+
       // How many spaces to add on a tab keydown.
       editorTabSpaces: 2
-    };
-  }
+
+    }; // End this.state.
+  } // End main constructor.
+
+  /***************************
+   * Editor.onkeydown
+  ***************************/
 
   // Needed for any key-press-specific functionality.
   onkeydown(e) {
+
+    // When user presses the 'Tab' key, added two spaces and move selection indices.
     if (e.key === 'Tab') {
+
+      // Prevent default behavior.
       e.preventDefault();
 
-      // Saving selection end points.
+      // Save selection start point.
       const selStart = e.target.selectionStart;
+
+      // Save selection end point.
       const selEnd = e.target.selectionEnd;
 
-      // Adding spaces.
-      let newContent = e.target.value.slice(0, selStart);
-      for (let i = 0; i < this.state.editorTabSpaces; i++) newContent += ' ';
-      newContent += e.target.value.slice(selStart);
-      e.target.value = newContent;
+      // Collect Editor content before selection start.
+      let newEditorContent = e.target.value.slice(0, selStart);
 
-      // Resetting selection according to new content.
+      // Add appropriate number of spaces for one keypress of the 'Tab' key.
+      for (let i = 0; i < this.state.editorTabSpaces; i++) newEditorContent += ' ';
+
+      // Collect Editor content after selection end.
+      newEditorContent += e.target.value.slice(selStart);
+
+      // Update Editor content.
+      e.target.value = newEditorContent;
+
+      // Resetting selection start according to new Editor content.
       e.target.selectionStart = selStart + this.state.editorTabSpaces;
-      e.target.selectionEnd = selEnd + this.state.editorTabSpaces;
-    }
-  }
 
+      // Resetting selection end according to new Editor content.
+      e.target.selectionEnd = selEnd + this.state.editorTabSpaces;
+    } // End 'Tab' if-block.
+  } // End onkeydown method.
+
+  /***************************
+   * Editor.render
+  ***************************/
+
+  // Render textarea as code editor.
   render() {
     return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
       'div',
@@ -9591,8 +9629,9 @@ class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         this.props.content
       )
     );
-  }
-}
+  } // End render method.
+
+} // End Editor Component.
 
 /* harmony default export */ __webpack_exports__["a"] = (Editor);
 
@@ -9605,7 +9644,11 @@ class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 
 
-// Editor Component shows code inputted / editted by user(s).
+/***************************
+ * Output Component
+***************************/
+
+// Output Component presents an unordered list made from a single string, split on the '\n' character.
 const Output = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
   'div',
   { id: props.outputId },
@@ -9618,7 +9661,7 @@ const Output = props => __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElem
       item
     ))
   )
-);
+); // End Output Component.
 
 /* harmony default export */ __webpack_exports__["a"] = (Output);
 
@@ -9651,12 +9694,20 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
+/***************************
+ * App Component
+***************************/
+
 class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
+
+  /***************************
+  * App.constructor
+  ***************************/
 
   // Main constructor method.
   constructor(props) {
 
-    // Included for good practice, not out of necessity.
+    // Props included for good practice, not out of necessity.
     super(props);
 
     // Standard React this.state. Contains information collected from or outputted to DOM.
@@ -9699,8 +9750,12 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.origSetInterval = setInterval;
   } // End main constructor method.
 
-  // Restore functions that assets are trained to monkeypatch: console.log, setTimeout, and setInterval.
-  restoreMonkeypatches() {
+  /***************************
+   * App.theManInTheYellowHat
+  ***************************/
+
+  // Restore functions that assets are trained to monkeypatch. Named after Curious George's caretaker.
+  theManInTheYellowHat() {
 
     // Assets monkeypatch console.log to limit messages sent to main script in case of infinite loops.
     console.log = this.origLog;
@@ -9710,12 +9765,20 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
     // Assets monkeypatch setInterval to try-catch the callback.
     setInterval = this.origSetInterval;
-  } // End restoreMonkeypatches method.
+  } // End theManInTheYellowHat method.
+
+  /***************************
+   * App.onchange
+  ***************************/
 
   // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
   onchange(e) {
     this.setState({ editorContent: e.target.value });
   }
+
+  /***************************
+   * App.runCode
+  ***************************/
 
   // When "Run Code" button is clicked, clear Output Component and brief asset.
   runCode() {
@@ -9727,6 +9790,10 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.briefAsset(this.state.editorContent);
   } // End runCode method.
 
+  /***************************
+   * App.endCode
+  ***************************/
+
   // When "End Code" button is clicked, kill asset and put out a PR statement.
   endCode() {
 
@@ -9737,10 +9804,18 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.renderOutput(this.state.outputContent + 'Code ended.\n');
   } // End endCode method.
 
+  /***************************
+   * App.renderOutput
+  ***************************/
+
   // Render output to Output Component.
   renderOutput(output) {
     this.setState({ outputContent: output });
   }
+
+  /***************************
+   * App.deployAsset
+  ***************************/
 
   // Deploy asset for initial mission and stay deployed for asynchronous mission creep.
   deployAsset() {
@@ -9758,12 +9833,16 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       clearTimeout(this.shadowState.assassinID);
 
       // Restore monkeypatched functions.
-      this.restoreMonkeypatches();
+      this.theManInTheYellowHat();
 
       // Deliver report from asset.
       return this.renderOutput(this.state.outputContent + report.data);
     }; // End this.shadowState.asset.onmessage method.
   } // End deployAsset method.
+
+  /***************************
+   * App.briefAsset
+  ***************************/
 
   // Brief asset on mission. Deploy new asset first if none are active.
   briefAsset(code) {
@@ -9778,6 +9857,10 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.assassinStandby();
   } // End briefAsset method.
 
+  /***************************
+   * App.killAsset
+  ***************************/
+
   // Eliminate asset.
   killAsset() {
 
@@ -9788,11 +9871,15 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.shadowState.assetDeployed = false;
 
     // Restore monkeypatched functions.
-    this.restoreMonkeypatches();
+    this.theManInTheYellowHat();
 
     // Put out a public statement covering up the incident.
     this.renderOutput('Code timed out.');
   } // End killAsset method.
+
+  /***************************
+   * App.assassinStandby
+  ***************************/
 
   // Activate assassin to eliminate asset upon lack of timely report.
   assassinStandby() {
@@ -9804,6 +9891,10 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       this.killAsset();
     }, this.shadowState.deadline); // End setTimeout invocation.
   } // End assassinStandby method.
+
+  /***************************
+   * App.render
+  ***************************/
 
   // Render code editor (Editor Component) and console output (Output Component).
   render() {
@@ -9856,7 +9947,8 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_4__output_jsx__["a" /* default */], { content: this.state.outputContent, outputId: 'output' })
     );
   } // End render method.
-} // End App Component class.
+
+} // End App Component.
 
 // Targets div on index.html with id of 'x' as entry point for React App Component.
 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_react_dom__["render"])(__WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(App, null), document.getElementById('x'));
