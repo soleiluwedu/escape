@@ -5,6 +5,9 @@
 // Stringify data to optimize inspection of JavaScript expressions.
 function unlace(data) {
 
+  // Disallow access to 'this' for security.
+  if (data === this) return '[restricted]';
+
   // These data types do not have toString() functionality.
   switch (data) {
 
@@ -43,16 +46,18 @@ function unlace(data) {
 ***************************/
 
 // class ConsoleLog accepts context (which will be 'this') and returns object functions so console.log can be monkeypatched.
-function ConsoleLog(context) {
+class ConsoleLog {
 
-  // Expressions restricted from being logged. Pass in 'this' to be referred to as 'context' in class methods.
-  this.restricted = [context];
+  // Main constructor method.
+  constructor(context) {
 
-  // All log output saved together as one large string.
-  this.fullLog = '';
+    // All log output saved together as one large string.
+    this.fullLog = '';
 
-  // Log method to be used as monkeypatch for console.log. Saves logs to this.fullLog.
-  this.log = (...args) => this.fullLog += args.map(e => this.restricted.indexOf(e) > -1 ? '[Restricted]' : unlace(e)).join(' ') + '\n';
+    // Log method to be used as monkeypatch for console.log. Saves logs to this.fullLog.
+    this.log = (...args) => this.fullLog += args.map(e => unlace(e)).join(' ') + '\n';
+
+  } // End main constructor methods.
 
 } // End ConsoleLog class.
 
