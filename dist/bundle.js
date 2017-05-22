@@ -9829,38 +9829,37 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     // Protocol for receipt of report from asset.
     this.shadowState.asset.onmessage = report => {
 
+      // Stand down assassin.
+      this.assassinStandDown();
+
+      // Restore monkeypatched functions.
+      this.theManInTheYellowHat();
+
+      // Further protocol depends on type of report from asset.
       switch (report.data.action) {
 
-        // Asset reports successful execution of code.
+        // Asset reports successful execution of mission.
         case 'success':
 
-        // Asset reports error during execution of code.
+        // Asset reports error during execution of mission.
         case 'failure':
 
-          // Stand down assassin.
-          this.assassinStandDown();
+          // Publish public aspect of report.
+          this.renderOutput(this.state.outputContent + report.data.public);
 
-          // Publish statement regarding mission.
-          this.renderOutput(this.state.outputContent + report.data.content);
-
-          // Break to avoid initiating below protocols.
+          // Break to avoid initiating below protocols if any.
           break;
 
-        // Asset reports beginning of a new, asynchronous mission.
+        // Asset reports mission creep (asynchronous operations).
         case 'async':
-
-          // Stand down assassin.
-          this.assassinStandDown();
 
           // Put new assassin on standby.
           this.assassinStandby();
 
-          // Break to avoid initiating below protocols.
+          // Break to avoid initiating below protocols if any.
           break;
-      }
 
-      // Restore monkeypatched functions.
-      this.theManInTheYellowHat();
+      } // End switch block on report.data.action.
     }; // End this.shadowState.asset.onmessage method.
   } // End deployAsset method.
 

@@ -84,10 +84,10 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
     try { func(); }
 
     // Catch and report error in callback if any.
-    catch (err) { self.postMessage({ action: 'failure', content: `Error in asynchronous callback: ${err.message}\n` }); }
+    catch (err) { self.postMessage({ action: 'failure', public: `Error in asynchronous callback: ${err.message}\n` }); }
 
     // Report one string containing all console.logs compiled together.
-    finally { self.postMessage({ action: 'success', content: asyncLog.fullLog }); }
+    finally { self.postMessage({ action: 'success', public: asyncLog.fullLog }); }
 
   }, wait); // End asyncFunc invocation.
 
@@ -116,9 +116,9 @@ self.onmessage = e => {
   try { eval(e.data); }
 
   // Catch and report error in code if any.
-  catch (err) { self.postMessage({ action: 'failure', content: `Error: ${err.message}\n` }); }
+  catch (err) { self.postMessage({ action: 'failure', public: `Error: ${err.message}\n` }); }
 
   // Report one string containing all console.logs compiled together.
-  finally { self.postMessage({ action: 'success', content: workerLog.fullLog }); }
+  finally { self.postMessage({ action: 'success', public: workerLog.fullLog }); }
 
 } // End self.onmessage.
