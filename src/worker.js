@@ -42,11 +42,11 @@ function unlace(data) {
 } // End unlace function.
 
 /***************************
- * ConsoleLog class
+ * ConsoleMonkey class
 ***************************/
 
-// class ConsoleLog accepts context (which will be 'this') and returns object functions so console.log can be monkeypatched.
-class ConsoleLog {
+// class ConsoleMonkey returns object to collect and report console output.
+class ConsoleMonkey {
 
   // Main constructor method.
   constructor(context) {
@@ -57,25 +57,25 @@ class ConsoleLog {
     // Log method to be used as monkeypatch for console.log. Saves logs to this.fullLog.
     this.log = (...args) => this.fullLog += args.map(e => unlace(e)).join(' ') + '\n';
 
-  } // End main constructor methods.
+    // Log method to be used as monkeypatch for console.error. Saves errors to this.fullLog.
+    this.error = (...args) => this.fullLog += 'Error: ' + args.map(e => unlace(e)).join(' ') + '\n';
 
-} // End ConsoleLog class.
+  } // End main constructor method.
+
+} // End ConsoleMonkey class.
 
 /***************************
  * monkeyPatchAsync
 ***************************/
 
-// Accept async func => create new func to time and try-catch callback, then post one console.log output string.
+// Accept async func => create new func to time and try-catch callback, then post one console output string.
 const monkeyPatchAsync = asyncFunc => (func, wait) => {
 
   // Return original asynchronous function so any ID (like setTimeout ID or setInterval ID) is returned.
   return asyncFunc(() => {
 
-    // Instantiate new instance of ConsoleLog class to monkeypatch async console.log invocations.
-    const asyncLog = new ConsoleLog(this);
-
-    // Monkeypatch console.log in async callback to collect all console.logs into one string.
-    console.log = asyncLog.log;
+    // Monkeypatch console object and async functions to report to main script appropriately.
+    [console, setTimeout, setInterval] = [new ConsoleMonkey, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
 
     // Report beginning of async operation back to main script to be timed on execution.
     self.postMessage({ action: 'async' });
@@ -86,8 +86,8 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
     // Catch and report error in callback if any.
     catch (err) { self.postMessage({ action: 'failure', public: `Error in asynchronous callback: ${err.message}\n` }); }
 
-    // Report one string containing all console.logs compiled together.
-    finally { self.postMessage({ action: 'success', public: asyncLog.fullLog }); }
+    // Report one string containing all console output compiled together.
+    finally { self.postMessage({ action: 'success', public: console.fullLog }); }
 
   }, wait); // End asyncFunc invocation.
 
@@ -97,20 +97,11 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
 * self.onmessage
 ***************************/
 
-// On receipt of data, eval code and send back one string containing all console.logs.
+// On receipt of data, eval code and send back one string containing all console output.
 self.onmessage = e => {
 
-  // Instantiate new instance of ConsoleLog class to monkeypatch worker console.log invocations.
-  const workerLog = new ConsoleLog(this);
-
-  // Monkeypatch console.log to send back one string containing all worker console.logs.
-  console.log = workerLog.log;
-
-  // Monkeypatch setTimeout to try-catch callback and send one string of all callback console.logs.
-  setTimeout = monkeyPatchAsync(setTimeout);
-
-  // Monkeypatch setInterval to try-catch callback and send one string of all callback console.logs.
-  setInterval = monkeyPatchAsync(setInterval);
+  // Monkeypatch console object and async functions to report to main script appropriately.
+  [console, setTimeout, setInterval] = [new ConsoleMonkey, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
 
   // Eval code sent from main script.
   try { eval(e.data); }
@@ -118,7 +109,7 @@ self.onmessage = e => {
   // Catch and report error in code if any.
   catch (err) { self.postMessage({ action: 'failure', public: `Error: ${err.message}\n` }); }
 
-  // Report one string containing all console.logs compiled together.
-  finally { self.postMessage({ action: 'success', public: workerLog.fullLog }); }
+  // Report one string containing all console output compiled together.
+  finally { self.postMessage({ action: 'success', public: console.fullLog }); }
 
 } // End self.onmessage.

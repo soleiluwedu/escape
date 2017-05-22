@@ -54,10 +54,8 @@ class App extends Component {
     this.runCode = this.runCode.bind(this);
     this.endCode = this.endCode.bind(this);
 
-    // Save originals of functions that assets are trained to monkeypatch them.
-    this.origLog = console.log;
-    this.origSetTimeout = setTimeout;
-    this.origSetInterval = setInterval;
+    // Save originals of functions that assets are trained to monkeypatch.
+    [this.origConsole, this.origSetTimeout, this.origSetInterval] = [console, setTimeout, setInterval];
 
   } // End main constructor method.
 
@@ -68,14 +66,8 @@ class App extends Component {
   // Restore functions that assets are trained to monkeypatch. Named after Curious George's caretaker.
   theManInTheYellowHat() {
 
-    // Assets monkeypatch console.log to limit messages sent to main script in case of infinite loops.
-    console.log = this.origLog;
-
-    // Assets monkeypatch setTimeout to try-catch the callback.
-    setTimeout = this.origSetTimeout;
-
-    // Assets monkeypatch setInterval to try-catch the callback.
-    setInterval = this.origSetInterval;
+    // Restore console object and asynchronous functions setTimeout and setInterval.
+    [console, setTimeout, setInterval] = [this.origConsole, this.origSetTimeout, this.origSetInterval];
 
   } // End theManInTheYellowHat method.
 
@@ -120,17 +112,17 @@ class App extends Component {
    * App.renderOutput
   ***************************/
 
-  // Render output to Output Component.
+  // Render single string to Output Component. String will be split on '\n' to make list items.
   renderOutput(output) { this.setState({ outputContent: output }); }
 
   /***************************
    * App.deployAsset
   ***************************/
 
-  // Deploy asset for initial mission and stay deployed for asynchronous mission creep.
+  // Deploy asset for initial mission and stay deployed for possible asynchronous mission creep.
   deployAsset() {
 
-    // Activate asset.
+    // Recruit and deploy asset.
     this.shadowState.asset = new Worker('./src/worker.js');
 
     // Update record to indicate that an asset is currently deployed.
@@ -210,7 +202,7 @@ class App extends Component {
     this.theManInTheYellowHat();
 
     // Put out a public statement covering up the incident.
-    this.renderOutput(this.state.outputContent + 'Code timed out. Any pending console.log output voided.\n');
+    this.renderOutput(this.state.outputContent + 'Code timed out. Any pending console output voided.\n');
 
   } // End killAsset method.
 
