@@ -50,8 +50,8 @@ class App extends Component {
 
     // Bind methods that will be passed to children components.
     this.onchange = this.onchange.bind(this);
-    this.runCode = this.runCode.bind(this);
     this.renderOutput = this.renderOutput.bind(this);
+    this.runCode = this.runCode.bind(this);
     this.endCode = this.endCode.bind(this);
 
     // Save originals of functions that assets are trained to monkeypatch them.
