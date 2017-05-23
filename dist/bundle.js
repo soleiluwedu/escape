@@ -9744,7 +9744,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.runCode = this.runCode.bind(this);
     this.endCode = this.endCode.bind(this);
 
-    // Save originals of functions that assets are trained to monkeypatch.
+    // Save originals of functions that assets are trained to monkey patch.
     [this.origConsole, this.origSetTimeout, this.origSetInterval] = [console, setTimeout, setInterval];
   } // End main constructor method.
 
@@ -9752,7 +9752,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
    * App.theManInTheYellowHat
   ***************************/
 
-  // Restore functions that assets are trained to monkeypatch. Named after Curious George's caretaker.
+  // Restore functions that assets are trained to monkey patch. Named after Curious George's caretaker.
   theManInTheYellowHat() {
 
     // Restore console object and asynchronous functions setTimeout and setInterval.
@@ -9824,7 +9824,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       // Stand down assassin.
       this.assassinStandDown();
 
-      // Restore monkeypatched functions.
+      // Restore monkey patched functions.
       this.theManInTheYellowHat();
 
       // Further protocol depends on type of report from asset.
@@ -9885,7 +9885,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     // Update record to indicate no assets currently deployed.
     this.shadowState.assetDeployed = false;
 
-    // Restore monkeypatched functions.
+    // Restore monkey patched functions.
     this.theManInTheYellowHat();
 
     // Put out a public statement covering up the incident.

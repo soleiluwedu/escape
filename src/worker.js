@@ -9,13 +9,16 @@ function unlace(data) {
   switch (data) {
 
     // Expressions blocked to prevent users from getting too curious.
-    case onmessage:
     case unlace:
     case ConsoleMonkey:
-    case monkeyPatchAsync: return 'undefined';
+    case monkeyPatchAsync:
+    case junglePatch:
+    case theManInTheYellowHat:  
+    case onmessage: return 'undefined';
     case console:
     case console.log:
-    case console.error: return '(console object restricted)';
+    case console.error:
+    case console.fullLog: return '(console object restricted)';
     case this: return '(this keyword restricted)';
     case setTimeout: return '(setTimeout function restricted)';
     case setInterval: return '(setInterval function restricted)';
@@ -68,10 +71,10 @@ class ConsoleMonkey {
     // All log output saved together as one large string.
     this.fullLog = '';
 
-    // Log method to be used as monkeypatch for console.log. Saves logs to this.fullLog.
+    // Log method to be used as monkey patch for console.log. Saves logs to this.fullLog.
     this.log = (...args) => this.fullLog += args.map(e => unlace(e)).join(' ') + '\n';
 
-    // Log method to be used as monkeypatch for console.error. Saves errors to this.fullLog.
+    // Log method to be used as monkey patch for console.error. Saves errors to this.fullLog.
     this.error = (...args) => this.fullLog += 'Error: ' + args.map(e => unlace(e)).join(' ') + '\n';
 
   } // End main constructor method.
@@ -88,24 +91,59 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
   // Return original asynchronous function so any ID (like setTimeout ID or setInterval ID) is returned.
   return asyncFunc(() => {
 
-    // Monkeypatch console object and async functions to report to main script appropriately.
-    [console, setTimeout, setInterval] = [new ConsoleMonkey, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
-
     // Report beginning of async operation back to main script to be timed on execution.
     self.postMessage({ action: 'async' });
 
-    // Try callback.
-    try { func(); }
+    // Monkey patch console object, setTimeout, and setInterval.
+    junglePatch();
+
+    // Try block for async callback.
+    try {
+
+      // Execute async callback.
+      func();
+
+      //  If successful, report one string containing all async callback console output compiled together.
+      self.postMessage({ action: 'success', public: console.fullLog });
+
+    } // End try block for async callback.
 
     // Catch and report error in callback if any.
     catch (err) { self.postMessage({ action: 'failure', public: `Error in asynchronous callback: ${err.message}\n` }); }
 
-    // Report one string containing all console output compiled together.
-    finally { self.postMessage({ action: 'success', public: console.fullLog }); }
+    // Restore all monkey patched functions.
+    finally { theManInTheYellowHat(); }
 
   }, wait); // End asyncFunc invocation.
 
 } // End monkeyPatchAsync function.
+
+/***************************
+ * junglePatch
+***************************/
+
+// junglePatch function monkey patches console object, setTimeout, and setInterval.
+function junglePatch() {
+
+  // Save originals of functions that assets are trained to monkey patch.
+  [origConsole, origSetTimeout, origSetInterval] = [console, setTimeout, setInterval];
+
+  // Monkey patch console object and async functions to report to main script appropriately.
+  [console, setTimeout, setInterval] = [new ConsoleMonkey, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
+
+} // End junglePatch function.
+
+/***************************
+ * theManInTheYellowHat
+***************************/
+
+// Restore functions that assets are trained to monkey patch. Named after Curious George's caretaker.
+function theManInTheYellowHat() {
+
+  // Restore console object and asynchronous functions setTimeout and setInterval.
+  [console, setTimeout, setInterval] = [origConsole, origSetTimeout, origSetInterval];
+
+} // End theManInTheYellowHat function.
 
 /***************************
 * self.onmessage
@@ -114,16 +152,24 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
 // On receipt of data, eval code and send back one string containing all console output.
 self.onmessage = e => {
 
-  // Monkeypatch console object and async functions to report to main script appropriately.
-  [console, setTimeout, setInterval] = [new ConsoleMonkey, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
+  // Monkey patch console object, setTimeout, and setInterval.
+  junglePatch();
 
-  // Eval code sent from main script.
-  try { eval(e.data); }
+  // Try block for code sent from main script.
+  try {
+
+    // Eval code sent from main script.
+    eval(e.data);
+
+    // If successful, report one string containing all console output compiled together.
+    self.postMessage({ action: 'success', public: console.fullLog });
+
+  } // End try block for code sent from main script.
 
   // Catch and report error in code if any.
   catch (err) { self.postMessage({ action: 'failure', public: `Error: ${err.message}\n` }); }
 
-  // Report one string containing all console output compiled together.
-  finally { self.postMessage({ action: 'success', public: console.fullLog }); }
+  // Restore all monkey patched functions.
+  finally { theManInTheYellowHat(); }
 
 } // End self.onmessage.
