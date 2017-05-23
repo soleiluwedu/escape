@@ -125,7 +125,7 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
 // junglePatch function monkey patches console object, setTimeout, and setInterval.
 function junglePatch() {
 
-  // Save originals of functions that assets are trained to monkey patch.
+  // Save originals of functions that workers are programmed to monkey patch.
   [origConsole, origSetTimeout, origSetInterval] = [console, setTimeout, setInterval];
 
   // Monkey patch console object and async functions to report to main script appropriately.
@@ -137,7 +137,7 @@ function junglePatch() {
  * theManInTheYellowHat
 ***************************/
 
-// Restore functions that assets are trained to monkey patch. Named after Curious George's caretaker.
+// Restore functions that workers are programmed to monkey patch. Named after Curious George's caretaker.
 function theManInTheYellowHat() {
 
   // Restore console object and asynchronous functions setTimeout and setInterval.
