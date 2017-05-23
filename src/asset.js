@@ -5,7 +5,7 @@
 // Stringify data to optimize inspection of JavaScript expressions.
 function unlace(data) {
 
-  // Disallow access for security.
+  // Compare data to blocked expressions.
   switch (data) {
 
     // Expressions blocked to prevent users from getting too curious.
@@ -13,7 +13,7 @@ function unlace(data) {
     case ConsoleMonkey:
     case monkeyPatchAsync:
     case junglePatch:
-    case theManInTheYellowHat:  
+    case theManWithTheYellowHat:
     case onmessage: return 'undefined';
     case console:
     case console.log:
@@ -23,9 +23,9 @@ function unlace(data) {
     case setTimeout: return '(setTimeout function restricted)';
     case setInterval: return '(setInterval function restricted)';
 
-  } // End switch block on data for blocked expressions.
+  } // End switch comparing data to blocked expressions.
 
-  // These data types do not have toString() functionality.
+  // Compare data to null or undefined, as these data types do not have toString() functionality.
   switch (data) {
 
     // Return string 'null' to prevent confusing output of actual null value.
@@ -34,9 +34,9 @@ function unlace(data) {
     // Return string 'undefined' to prevent confusing output of actual undefined value.
     case undefined: return 'undefined';
 
-  } // End switch statement checking for null or undefined values.
+  } // End switch statement comparing data to null or undefined.
 
-  // Conditionally stringify according to data type.
+  // Compare typeof data to different JavaScript data types.
   switch (typeof data) {
 
     // Objects will be stringified recursively.
@@ -54,7 +54,7 @@ function unlace(data) {
     // All others will be stringified with toString().
     default: return data.toString();
 
-  } // End switch statement checking data type.
+  } // End switch statement comparing typeof data to different JavaScript data types.
 
 } // End unlace function.
 
@@ -66,7 +66,7 @@ function unlace(data) {
 class ConsoleMonkey {
 
   // Main constructor method.
-  constructor(context) {
+  constructor() {
 
     // All log output saved together as one large string.
     this.fullLog = '';
@@ -109,10 +109,10 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
     } // End try block for async callback.
 
     // Catch and report error in callback if any.
-    catch (err) { self.postMessage({ action: 'failure', public: `Error in asynchronous callback: ${err.message}\n` }); }
+    catch (err) { self.postMessage({ action: 'failure', public: console.fullLog + `Error in asynchronous callback: ${err.message}\n` }); }
 
     // Restore all monkey patched functions.
-    finally { theManInTheYellowHat(); }
+    finally { theManWithTheYellowHat(); }
 
   }, wait); // End asyncFunc invocation.
 
@@ -125,29 +125,45 @@ const monkeyPatchAsync = asyncFunc => (func, wait) => {
 // junglePatch function monkey patches console object, setTimeout, and setInterval.
 function junglePatch() {
 
-  // Save originals of functions that workers are programmed to monkey patch.
+  // Save originals of functions that will be monkey patched.
   [origConsole, origSetTimeout, origSetInterval] = [console, setTimeout, setInterval];
 
-  // Monkey patch console object and async functions to report to main script appropriately.
+  // Monkey patch console object, setTimeout, and setInterval to report to main script appropriately.
   [console, setTimeout, setInterval] = [new ConsoleMonkey, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
 
 } // End junglePatch function.
 
 /***************************
- * theManInTheYellowHat
+ * theManWithTheYellowHat
 ***************************/
 
-// Restore functions that workers are programmed to monkey patch. Named after Curious George's caretaker.
-function theManInTheYellowHat() {
+// Clean up after all the monkey business. Named after Curious George's caretaker.
+function theManWithTheYellowHat() {
 
   // Restore console object and asynchronous functions setTimeout and setInterval.
   [console, setTimeout, setInterval] = [origConsole, origSetTimeout, origSetInterval];
 
-} // End theManInTheYellowHat function.
+} // End theManWithTheYellowHat function.
 
 /***************************
 * self.onmessage
 ***************************/
+
+// !!! Idea: Spawn a second worker. First worker to receive code does not eval it, but
+// just spawns a second worker. Then the second worker evals the code and sends live console
+// logs to the first worker, so the first worker can collect all console logs that occurred
+// before any infinite loops. If the second worker does not report in to the main script,
+// the main script kills the second worker and then sends a message to the first worker to
+// command it to report back any console logs it received, and then reset its log to an
+// empty string to standby for more console logs from the next spawned second worker.
+// Make sure the main script is in charge of killing the second worker, not the first worker,
+// because the first worker's event loop will be infinitely filled up by any console logs
+// inside inifite loops in the second worker. Theoretically, the first worker should never crash,
+// because it is only received strings, collecting them into one big string, and reporting
+// that string back to the main script. The first worker should report back to the main script
+// by the main script asking for it. The main script should ask for it in two scenarios:
+// 1) the second worker reports it's done (success OR failure), and 2) the second worker fails
+// to report back at all and times out.
 
 // On receipt of data, eval code and send back one string containing all console output.
 self.onmessage = e => {
@@ -167,9 +183,9 @@ self.onmessage = e => {
   } // End try block for code sent from main script.
 
   // Catch and report error in code if any.
-  catch (err) { self.postMessage({ action: 'failure', public: `Error: ${err.message}\n` }); }
+  catch (err) { self.postMessage({ action: 'failure', public: console.fullLog + `Error: ${err.message}\n` }); }
 
   // Restore all monkey patched functions.
-  finally { theManInTheYellowHat(); }
+  finally { theManWithTheYellowHat(); }
 
-} // End self.onmessage.
+} // End self.onmessage method.

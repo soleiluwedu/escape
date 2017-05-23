@@ -9813,7 +9813,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
   deployAsset() {
 
     // Recruit and deploy asset.
-    this.shadowState.asset = new Worker('./src/worker.js');
+    this.shadowState.asset = new Worker('./src/asset.js');
 
     // Update record to indicate that an asset is currently deployed.
     this.shadowState.assetDeployed = true;
@@ -9846,7 +9846,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
         case 'async':
 
           // Put new assassin on standby.
-          this.assassinStandby();
+          this.deployAssassin();
 
           // Break to avoid initiating below protocols if any.
           break;
@@ -9869,7 +9869,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.shadowState.asset.postMessage(code);
 
     // Put out a hit on the asset that will be cancelled if asset reports back in time.
-    this.assassinStandby();
+    this.deployAssassin();
   } // End briefAsset method.
 
   /***************************
@@ -9904,11 +9904,11 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
   } // End assassinStandDown method.
 
   /***************************
-   * App.assassinStandby
+   * App.deployAssassin
   ***************************/
 
   // Activate assassin to eliminate asset upon lack of timely report.
-  assassinStandby() {
+  deployAssassin() {
 
     // Save setTimeout ID of assassin to allow cancellation.
     this.shadowState.assassinID = setTimeout(() => {
@@ -9916,7 +9916,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       // Eliminate asset.
       this.killAsset();
     }, this.shadowState.deadline); // End setTimeout invocation.
-  } // End assassinStandby method.
+  } // End deployAssassin method.
 
   /***************************
    * App.render
