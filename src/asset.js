@@ -10,7 +10,7 @@ const unlace = data => {
 
     // Expressions blocked to prevent users from getting too curious.
     case unlace:
-    case ConsoleMonkey:
+    case AssetConsole:
     case monkeyPatchAsync:
     case junglePatch:
     case theManWithTheYellowHat:
@@ -59,11 +59,11 @@ const unlace = data => {
 } // End unlace function.
 
 /***************************
- * ConsoleMonkey class
+ * AssetConsole class
 ***************************/
 
-// class ConsoleMonkey returns object to collect and report console output.
-class ConsoleMonkey {
+// class AssetConsole returns object to collect and report console output.
+class AssetConsole {
 
   // Main constructor method.
   constructor() {
@@ -79,7 +79,7 @@ class ConsoleMonkey {
 
   } // End main constructor method.
 
-} // End ConsoleMonkey class.
+} // End AssetConsole class.
 
 /***************************
  * monkeyPatchAsync
@@ -126,7 +126,7 @@ const junglePatch = () => {
   [origConsole, origSetTimeout, origSetInterval] = [console, setTimeout, setInterval];
 
   // Monkey patch console object, setTimeout, and setInterval to report to main script appropriately.
-  [console, setTimeout, setInterval] = [new ConsoleMonkey, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
+  [console, setTimeout, setInterval] = [new AssetConsole, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
 
 } // End junglePatch function.
 
