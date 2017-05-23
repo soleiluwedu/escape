@@ -9740,24 +9740,10 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
     // Bind methods that will be passed to children components.
     this.onchange = this.onchange.bind(this);
-    this.renderOutput = this.renderOutput.bind(this);
     this.runCode = this.runCode.bind(this);
     this.endCode = this.endCode.bind(this);
-
-    // Save originals of functions that assets are trained to monkey patch.
-    [this.origConsole, this.origSetTimeout, this.origSetInterval] = [console, setTimeout, setInterval];
+    this.renderOutput = this.renderOutput.bind(this);
   } // End main constructor method.
-
-  /***************************
-   * App.theManInTheYellowHat
-  ***************************/
-
-  // Restore functions that assets are trained to monkey patch. Named after Curious George's caretaker.
-  theManInTheYellowHat() {
-
-    // Restore console object and asynchronous functions setTimeout and setInterval.
-    [console, setTimeout, setInterval] = [this.origConsole, this.origSetTimeout, this.origSetInterval];
-  } // End theManInTheYellowHat method.
 
   /***************************
    * App.onchange
@@ -9821,11 +9807,8 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     // Protocol for receipt of report from asset.
     this.shadowState.asset.onmessage = report => {
 
-      // Stand down assassin.
+      // Call off the hit.
       this.assassinStandDown();
-
-      // Restore monkey patched functions.
-      this.theManInTheYellowHat();
 
       // Further protocol depends on type of report from asset.
       switch (report.data.action) {
@@ -9884,9 +9867,6 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
     // Update record to indicate no assets currently deployed.
     this.shadowState.assetDeployed = false;
-
-    // Restore monkey patched functions.
-    this.theManInTheYellowHat();
 
     // Put out a public statement covering up the incident.
     this.renderOutput(this.state.outputContent + 'Code timed out. Any pending console output voided.\n');

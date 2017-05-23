@@ -3,7 +3,7 @@
 ***************************/
 
 // Stringify data to optimize inspection of JavaScript expressions.
-function unlace(data) {
+const unlace = data => {
 
   // Compare data to blocked expressions.
   switch (data) {
@@ -86,44 +86,41 @@ class ConsoleMonkey {
 ***************************/
 
 // Accept async func => create new func to time and try-catch callback, then post one console output string.
-const monkeyPatchAsync = asyncFunc => (func, wait) => {
+const monkeyPatchAsync = asyncFunc => (callback, wait) => asyncFunc(() => {
 
-  // Return original asynchronous function so any ID (like setTimeout ID or setInterval ID) is returned.
-  return asyncFunc(() => {
+  // Report beginning of async operation back to main script to be timed on execution.
+  self.postMessage({ action: 'async' });
 
-    // Report beginning of async operation back to main script to be timed on execution.
-    self.postMessage({ action: 'async' });
+  // Monkey patch console object, setTimeout, and setInterval.
+  junglePatch();
 
-    // Monkey patch console object, setTimeout, and setInterval.
-    junglePatch();
+  // Try block for callback.
+  try {
 
-    // Try block for async callback.
-    try {
+    // Execute callback.
+    callback();
 
-      // Execute async callback.
-      func();
+    //  If successful, report one string containing all async callback console output compiled together.
+    self.postMessage({ action: 'success', public: console.fullLog });
 
-      //  If successful, report one string containing all async callback console output compiled together.
-      self.postMessage({ action: 'success', public: console.fullLog });
+  } // End try block for callback.
 
-    } // End try block for async callback.
+  // Catch and report error in callback if any.
+  catch (err) { self.postMessage({ action: 'failure', public: console.fullLog + `Error in asynchronous callback: ${err.message}\n` }); }
 
-    // Catch and report error in callback if any.
-    catch (err) { self.postMessage({ action: 'failure', public: console.fullLog + `Error in asynchronous callback: ${err.message}\n` }); }
+  // Restore all monkey patched functions.
+  // finally { theManWithTheYellowHat(); }
 
-    // Restore all monkey patched functions.
-    finally { theManWithTheYellowHat(); }
+}, wait); // End asyncFunc invocation.
 
-  }, wait); // End asyncFunc invocation.
-
-} // End monkeyPatchAsync function.
+// End monkeyPatchAsync function.
 
 /***************************
  * junglePatch
 ***************************/
 
 // junglePatch function monkey patches console object, setTimeout, and setInterval.
-function junglePatch() {
+const junglePatch = () => {
 
   // Save originals of functions that will be monkey patched.
   [origConsole, origSetTimeout, origSetInterval] = [console, setTimeout, setInterval];
@@ -138,7 +135,7 @@ function junglePatch() {
 ***************************/
 
 // Clean up after all the monkey business. Named after Curious George's caretaker.
-function theManWithTheYellowHat() {
+const theManWithTheYellowHat = () => {
 
   // Restore console object and asynchronous functions setTimeout and setInterval.
   [console, setTimeout, setInterval] = [origConsole, origSetTimeout, origSetInterval];
