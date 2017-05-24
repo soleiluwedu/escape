@@ -143,6 +143,8 @@ const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
 
 // End assetAsyncOp function.
 
+const origConsole = console;
+
 // Monkey patch console object, setTimeout, and setInterval to report to bridge agent appropriately.
 [console, setTimeout, setInterval] = [new AssetConsole, assetAsyncOp(setTimeout), assetAsyncOp(setInterval)];
 
@@ -165,7 +167,7 @@ self.onmessage = briefing => {
       break;
 
     // Received command to engage in mission.
-    case 'engage':
+    case 'execute':
 
       // Try block for mission code.
       try {
@@ -188,6 +190,9 @@ self.onmessage = briefing => {
         self.postMessage({ status: 'failure' });
 
       } // End catch block for mission code.
+
+      // Break to avoid initiating below protocols if any.
+      break;
 
   } // End switch block evaluating briefing.data.command.
 

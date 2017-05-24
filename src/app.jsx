@@ -55,7 +55,7 @@ class App extends Component {
     this.ops = {
 
       // Recorder (web worker) receives console.logs on invocation from asset.
-      recorder: new Worker('./recorder'),
+      recorder: new Worker('./src/recorder.js'),
 
       // Asset (web worker) evals code to help keep the main script safe from errors.
       asset: null,
@@ -66,7 +66,7 @@ class App extends Component {
     } // End this.ops object.
 
     // Open port on recorder for asset to send console.logs as they are invoked.
-    this.ops.recorder.postMessage({ command: 'port', port: this.ops.channel.port1 });
+    this.ops.recorder.postMessage({ command: 'port' }, [this.ops.channel.port1]);
 
     // Protocol for receipt of record from recorder.
     this.ops.recorder.onmessage = record => {
@@ -170,7 +170,7 @@ class App extends Component {
     this.ops.assetDeployed = true;
 
     // Open port on asset to send console.logs as they are invoked to recorder.
-    this.ops.asset.postMessage({ action: 'port', port: this.ops.channel.port2 });
+    this.ops.asset.postMessage({ command: 'port' }, [this.ops.channel.port2]);
 
     // Protocol for receipt of report from asset.
     this.ops.asset.onmessage = report => {

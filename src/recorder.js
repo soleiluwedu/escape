@@ -23,9 +23,16 @@ class BlackBox {
     this.port = port;
 
     // Set protocol for receipt of record from asset to add to records.
-    this.port.onmessage = log => blackbox.records += log;
+    this.port.onmessage = this.collect.bind(this);
 
   } // End connect method.
+
+  // Collect data into records.
+  collect(doc) {
+
+    this.records += doc.data;
+
+  } // End collect method.
 
   // Erase records.
   burn() {
@@ -41,13 +48,13 @@ class BlackBox {
 * self.onmessage
 ***************************/
 
+// Instantiate BlackBox object to receive records from asset.
+const box = new BlackBox;
+
 // On receipt of package from the main script.
 self.onmessage = package => {
 
-  // Instantiate BlackBox object to receive records from asset.
-  const box = new BlackBox;
-
-  // Protocol depends on command field of package.data.
+  // switch block evaluating command.
   switch (package.data.command) {
 
     // Received command to connect port.
@@ -62,7 +69,7 @@ self.onmessage = package => {
     // Received command to send back records.
     case 'send':
 
-      // Send back records.
+      // Send records to main script.
       self.postMessage(box.records);
 
       // Erase records.
@@ -71,6 +78,6 @@ self.onmessage = package => {
       // Break to avoid initiating below protocols if any.
       break;
 
-  }
+  } // End switch block evaluating command.
 
 } // End self.onmessage method.
