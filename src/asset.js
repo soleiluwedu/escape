@@ -16,7 +16,8 @@ const unlace = data => {
     case console:
     case console.log:
     case console.error:
-    case console.fullLog: return '(console object restricted)';
+    case console.erase:
+    case console.record: return '(console object restricted)';
     case this: return '(this keyword restricted)';
     case setTimeout: return '(setTimeout function restricted)';
     case setInterval: return '(setInterval function restricted)';
