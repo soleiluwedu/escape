@@ -61,31 +61,49 @@ const unlace = data => {
  * AssetConsole class
 ***************************/
 
-// class AssetConsole returns object to collect and report console output.
+// class AssetConsole to serve as monkey patch for console object and send records to recorder.
 class AssetConsole {
 
   // Main constructor method.
   constructor() {
 
-    // All log output saved together as one large string.
-    this.record = '';
+    // Port to send communication to recorder.
+    this.port = null;
 
   } // End main constructor method.
 
-  // Log method to be used as monkey patch for console.log. Saves logs to this.fullLog.
+  // Saves given port for communication.
+  connect(port) {
+
+    // Set port to given argument.
+    this.port = port;
+
+    // Set protocol for receipt of record from recorder. Recorder should be silent.
+    this.port.onmessage = msg => console.log(`Unexpected message from recorder: ${msg}`);
+
+  } // End connect method.
+
+  // Log method to be used as monkey patch for console.log. Sends logs to recorder.
   log() {
-    const args = Array.from(arguments);
-    this.record += args.map(e => unlace(e)).join(' ') + '\n';
-  }
 
-  // Log method to be used as monkey patch for console.error. Saves errors to this.fullLog.
+    // Make array from argumengs to gain native array method functionality.
+    const args = Array.from(arguments);
+
+    // Send log to recorder.
+    this.port.postMessage(args.map(e => unlace(e)).join(' ') + '\n');
+
+  } // End log method.
+
+  // Error method to be used as monkey patch for console.error. Sends errors to recorder.
   error() {
-    const args = Array.from(arguments);
-    this.record += 'Error: ' + args.map(e => unlace(e)).join(' ') + '\n';
-  }
 
-  // Erase this.fullLog.
-  erase() { this.record = ''; }
+    // Make array from argumengs to gain native array method functionality.
+    const args = Array.from(arguments);
+
+    // Send error to recorder.
+    this.port.postMessage('Error: ' + args.map(e => unlace(e)).join(' ') + '\n');
+
+  } // End error method.
 
 } // End AssetConsole class.
 
@@ -97,71 +115,80 @@ class AssetConsole {
 const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
 
   // Report beginning of async operation back to main script to be timed on execution.
-  self.postMessage({ action: 'async' });
+  self.postMessage({ status: 'async' });
 
   // Try block for callback.
   try {
 
-    // Execute callback.
+    // Perfrom callback.
     callback();
 
-    //  If successful, report one string containing all async callback console output compiled together.
-    self.postMessage({ action: 'success', public: console.record });
+    // Report success status to main script.
+    self.postMessage({ status: 'success' });
 
   } // End try block for callback.
 
-  // Catch and report error in callback if any.
-  catch (err) { self.postMessage({ action: 'failure', public: console.record + `Error in asynchronous callback: ${err.message}\n` }); }
+  // Catch block for callback.
+  catch (err) {
 
-  // Erase console.record.
-  finally { console.erase(); }
+    // Send error message to recorder.
+    console.error(err.message);
+
+    // Report failure status to main script.
+    self.postMessage({ status: 'failure' });
+
+  } // End catch block for mission code.
 
 }, wait); // End asyncFunc invocation.
 
 // End assetAsyncOp function.
 
-// Monkey patch console object, setTimeout, and setInterval to report to main script appropriately.
+// Monkey patch console object, setTimeout, and setInterval to report to bridge agent appropriately.
 [console, setTimeout, setInterval] = [new AssetConsole, assetAsyncOp(setTimeout), assetAsyncOp(setInterval)];
 
 /***************************
 * self.onmessage
 ***************************/
 
-// !!! Idea: Spawn a second worker. First worker to receive code does not eval it, but
-// just spawns a second worker. Then the second worker evals the code and sends live console
-// logs to the first worker, so the first worker can collect all console logs that occurred
-// before any infinite loops. If the second worker does not report in to the main script,
-// the main script kills the second worker and then sends a message to the first worker to
-// command it to report back any console logs it received, and then reset its log to an
-// empty string to standby for more console logs from the next spawned second worker.
-// Make sure the main script is in charge of killing the second worker, not the first worker,
-// because the first worker's event loop will be infinitely filled up by any console logs
-// inside inifite loops in the second worker. Theoretically, the first worker should never crash,
-// because it is only received strings, collecting them into one big string, and reporting
-// that string back to the main script. The first worker should report back to the main script
-// by the main script asking for it. The main script should ask for it in two scenarios:
-// 1) the second worker reports it's done (success OR failure), and 2) the second worker fails
-// to report back at all and times out.
-
 // On receipt of data, eval code and send back one string containing all console output.
-
 self.onmessage = briefing => {
 
-  // Try block for code sent from main script.
-  try {
+  switch (briefing.data.command) {
 
-    // Eval code sent from main script.
-    eval(briefing.data);
+    // Received command to connect port.
+    case 'port':
 
-    // If successful, report one string containing all console output compiled together.
-    self.postMessage({ action: 'success', public: console.record });
+      // Connect port in console.
+      console.connect(briefing.ports[0]);
 
-  } // End try block for code sent from main script.
+      // Break to avoid initiating below protocols if any.
+      break;
 
-  // Catch and report error in code if any.
-  catch (err) { self.postMessage({ action: 'failure', public: console.record + `Error: ${err.message}\n` }); }
+    // Received command to engage in mission.
+    case 'engage':
 
-  // Erase console.record.
-  finally { console.erase(); }
+      // Try block for mission code.
+      try {
+
+        // Eval mission code.
+        eval(briefing.data.mission);
+
+        // Report success status to main script.
+        self.postMessage({ status: 'success' });
+
+      } // End try block for mission code.
+
+      // Catch block for mission code.
+      catch (err) {
+
+        // Send error message to recorder.
+        console.error(err.message);
+
+        // Report failure status to main script.
+        self.postMessage({ status: 'failure' });
+
+      } // End catch block for mission code.
+
+  } // End switch block evaluating briefing.data.command.
 
 } // End self.onmessage method.

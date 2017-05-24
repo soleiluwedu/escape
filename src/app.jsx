@@ -34,9 +34,6 @@ class App extends Component {
     // this.shadowState contains state secrets not shared elsewhere in the application.
     this.shadowState = {
 
-      // Asset is a web worker to be used to eval code to help keep the main script safe from errors.
-      asset: null,
-
       // Boolean to indicate if there is a deployed asset.
       assetDeployed: false,
 
@@ -44,9 +41,40 @@ class App extends Component {
       assassinID: null,
 
       // Assets must check in after 'deadline' number of milliseconds, or be killed.
-      deadline: 1000
+      deadline: 1000,
+
+      // String be shown before next console.log content.
+      preRecord: '',
+  
+      // String be shown after next console.log content.
+      postRecord: ''
 
     } // End this.shadowState object.
+
+    // this.ops contains web workers operational data and references.
+    this.ops = {
+
+      // Recorder (web worker) receives console.logs on invocation from asset.
+      recorder: new Worker('./recorder'),
+
+      // Asset (web worker) evals code to help keep the main script safe from errors.
+      asset: null,
+
+      // Channel allows asset to report console.logs to recorder.
+      channel: new MessageChannel
+
+    } // End this.ops object.
+
+    // Open port on recorder for asset to send console.logs as they are invoked.
+    this.ops.recorder.postMessage({ command: 'port', port: this.ops.channel.port1 });
+
+    // Protocol for receipt of record from recorder.
+    this.ops.recorder.onmessage = record => {
+
+      // Recorder only sends back console.log output.
+      this.renderOutput(record.data);
+
+    } // End this.ops.recorder.onmessage method.
 
     // Bind methods that will be passed to children components.
     this.onchange = this.onchange.bind(this);
@@ -60,8 +88,13 @@ class App extends Component {
    * App.onchange
   ***************************/
 
-  // Keep track of editor text. May come in handy if code-sharing funtionality is added in the future.
-  onchange(e) { this.setState({ editorContent: e.target.value }); }
+  // Updates Editor Component on every change to editor.
+  onchange(e) {
+
+    // Keep track of editor text. May come in handy if code-sharing funtionality is added.
+    this.setState({ editorContent: e.target.value });
+
+  } // End onchange method.
 
   /***************************
    * App.runCode
@@ -88,7 +121,7 @@ class App extends Component {
     // End asset's contract in the most permanent manner possible.
     this.killAsset();
 
-    // Put out a PR statement.
+    // Release a PR statement.
     this.renderOutput(this.state.outputContent + 'Code ended.\n');
 
   } // End endCode method.
@@ -97,8 +130,31 @@ class App extends Component {
    * App.renderOutput
   ***************************/
 
-  // Render single string to Output Component. String will be split on '\n' to make list items.
-  renderOutput(output) { this.setState({ outputContent: output }); }
+  // Render output to Output Component.
+  renderOutput(output) {
+
+    // Add any pre or post messages handed down from this.shadowState.
+    const totalOutput = this.shadowState.preRecord + output + this.shadowState.postRecord;
+
+    // Pre and post messages can be wiped after collection.
+    this.shadowState.preRecord = this.shadowState.postRecord = '';
+
+    // Show output to user. Output will be single string split on '\n' to make list items.
+    this.setState({ outputContent: totalOutput });
+
+  } // End renderOutput method.
+
+  /***************************
+   * App.collectRecord
+  ***************************/
+
+  // Send command to recorder to send back all records collected.
+  collectRecord() {
+
+    // Post message to recorder to send back records as a single string.
+    this.ops.recorder.postMessage({ command: 'send' });
+
+  } // End collectRecord method.
 
   /***************************
    * App.deployAsset
@@ -108,19 +164,22 @@ class App extends Component {
   deployAsset() {
 
     // Recruit and deploy asset.
-    this.shadowState.asset = new Worker('./src/asset.js');
+    this.ops.asset = new Worker('./src/asset.js');
 
     // Update record to indicate that an asset is currently deployed.
-    this.shadowState.assetDeployed = true;
+    this.ops.assetDeployed = true;
+
+    // Open port on asset to send console.logs as they are invoked to recorder.
+    this.ops.asset.postMessage({ action: 'port', port: this.ops.channel.port2 });
 
     // Protocol for receipt of report from asset.
-    this.shadowState.asset.onmessage = report => {
+    this.ops.asset.onmessage = report => {
 
       // Call off the hit.
       this.assassinStandDown();
 
       // Further protocol depends on type of report from asset.
-      switch (report.data.action) {
+      switch (report.data.status) {
 
         // Asset reports successful execution of mission.
         case 'success':
@@ -128,8 +187,8 @@ class App extends Component {
         // Asset reports error during execution of mission.
         case 'failure':
 
-          // Publish public aspect of report.
-          this.renderOutput(this.state.outputContent + report.data.public);
+          // Obtain record from recorder and publish public aspect of report.
+          this.collectRecord();
 
           // Break to avoid initiating below protocols if any.
           break;
@@ -137,15 +196,15 @@ class App extends Component {
         // Asset reports mission creep (asynchronous operations).
         case 'async':
 
-          // Put new assassin on standby.
-          this.deployAssassin();
+          // Deploy new assassin.
+          this.assassinDeploy();
 
           // Break to avoid initiating below protocols if any.
           break;
 
       } // End switch block on report.data.action.
 
-    } // End this.shadowState.asset.onmessage method.
+    } // End this.ops.asset.onmessage method.
 
   } // End deployAsset method.
 
@@ -154,16 +213,16 @@ class App extends Component {
   ***************************/
 
   // Brief asset on mission. Deploy new asset first if none are active.
-  briefAsset(code) {
+  briefAsset(mission) {
 
     // If no assets are currently deployed, deploy a new asset.
-    if (!this.shadowState.assetDeployed) this.deployAsset();
+    if (!this.ops.assetDeployed) this.deployAsset();
 
     // Send mission briefing to asset.
-    this.shadowState.asset.postMessage(code);
+    this.ops.asset.postMessage({ command: 'execute', mission: mission });
 
     // Put out a hit on the asset that will be cancelled if asset reports back in time.
-    this.deployAssassin();
+    this.assassinDeploy();
 
   } // End briefAsset method.
 
@@ -171,17 +230,20 @@ class App extends Component {
    * App.killAsset
   ***************************/
 
-  // Eliminate asset.
+  // Assassinate asset.
   killAsset() {
 
-    // Assassinate asset.
-    this.shadowState.asset.terminate();
+    // Eliminate asset.
+    this.ops.asset.terminate();
 
     // Update record to indicate no assets currently deployed.
-    this.shadowState.assetDeployed = false;
+    this.ops.assetDeployed = false;
 
-    // Put out a public statement covering up the incident.
-    this.renderOutput(this.state.outputContent + 'Code timed out. Any pending console output voided.\n');
+    // Release public statement to be shown after console.logs.
+    this.shadowState.postRecord = 'Error: Code timed out.\n';
+
+    // Send command to recorder to send back console.logs from asset.
+    this.collectRecord();
 
   } // End killAsset method.
 
@@ -198,11 +260,11 @@ class App extends Component {
   } // End assassinStandDown method.
 
   /***************************
-   * App.deployAssassin
+   * App.assassinDeploy
   ***************************/
 
   // Activate assassin to eliminate asset upon lack of timely report.
-  deployAssassin() {
+  assassinDeploy() {
 
     // Save setTimeout ID of assassin to allow cancellation.
     this.shadowState.assassinID = setTimeout(() => {
@@ -212,7 +274,7 @@ class App extends Component {
 
     }, this.shadowState.deadline); // End setTimeout invocation.
 
-  } // End deployAssassin method.
+  } // End assassinDeploy method.
 
   /***************************
    * App.render
