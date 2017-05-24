@@ -11,9 +11,7 @@ const unlace = data => {
     // Expressions blocked to prevent users from getting too curious.
     case unlace:
     case AssetConsole:
-    case monkeyPatchAsync:
-    case junglePatch:
-    case theManWithTheYellowHat:
+    case assetAsyncOp:
     case onmessage: return 'undefined';
     case console:
     case console.log:
@@ -69,30 +67,36 @@ class AssetConsole {
   constructor() {
 
     // All log output saved together as one large string.
-    this.fullLog = '';
-
-    // Log method to be used as monkey patch for console.log. Saves logs to this.fullLog.
-    this.log = (...args) => this.fullLog += args.map(e => unlace(e)).join(' ') + '\n';
-
-    // Log method to be used as monkey patch for console.error. Saves errors to this.fullLog.
-    this.error = (...args) => this.fullLog += 'Error: ' + args.map(e => unlace(e)).join(' ') + '\n';
+    this.record = '';
 
   } // End main constructor method.
+
+  // Log method to be used as monkey patch for console.log. Saves logs to this.fullLog.
+  log() {
+    const args = Array.from(arguments);
+    this.record += args.map(e => unlace(e)).join(' ') + '\n';
+  }
+
+  // Log method to be used as monkey patch for console.error. Saves errors to this.fullLog.
+  error() {
+    const args = Array.from(arguments);
+    this.record += 'Error: ' + args.map(e => unlace(e)).join(' ') + '\n';
+  }
+
+  // Erase this.fullLog.
+  erase() { this.record = ''; }
 
 } // End AssetConsole class.
 
 /***************************
- * monkeyPatchAsync
+ * assetAsyncOp
 ***************************/
 
 // Accept async func => create new func to time and try-catch callback, then post one console output string.
-const monkeyPatchAsync = asyncFunc => (callback, wait) => asyncFunc(() => {
+const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
 
   // Report beginning of async operation back to main script to be timed on execution.
   self.postMessage({ action: 'async' });
-
-  // Monkey patch console object, setTimeout, and setInterval.
-  junglePatch();
 
   // Try block for callback.
   try {
@@ -101,46 +105,22 @@ const monkeyPatchAsync = asyncFunc => (callback, wait) => asyncFunc(() => {
     callback();
 
     //  If successful, report one string containing all async callback console output compiled together.
-    self.postMessage({ action: 'success', public: console.fullLog });
+    self.postMessage({ action: 'success', public: console.record });
 
   } // End try block for callback.
 
   // Catch and report error in callback if any.
-  catch (err) { self.postMessage({ action: 'failure', public: console.fullLog + `Error in asynchronous callback: ${err.message}\n` }); }
+  catch (err) { self.postMessage({ action: 'failure', public: console.record + `Error in asynchronous callback: ${err.message}\n` }); }
 
-  // Restore all monkey patched functions.
-  // finally { theManWithTheYellowHat(); }
+  // Erase console.record.
+  finally { console.erase(); }
 
 }, wait); // End asyncFunc invocation.
 
-// End monkeyPatchAsync function.
+// End assetAsyncOp function.
 
-/***************************
- * junglePatch
-***************************/
-
-// junglePatch function monkey patches console object, setTimeout, and setInterval.
-const junglePatch = () => {
-
-  // Save originals of functions that will be monkey patched.
-  [origConsole, origSetTimeout, origSetInterval] = [console, setTimeout, setInterval];
-
-  // Monkey patch console object, setTimeout, and setInterval to report to main script appropriately.
-  [console, setTimeout, setInterval] = [new AssetConsole, monkeyPatchAsync(setTimeout), monkeyPatchAsync(setInterval)];
-
-} // End junglePatch function.
-
-/***************************
- * theManWithTheYellowHat
-***************************/
-
-// Clean up after all the monkey business. Named after Curious George's caretaker.
-const theManWithTheYellowHat = () => {
-
-  // Restore console object and asynchronous functions setTimeout and setInterval.
-  [console, setTimeout, setInterval] = [origConsole, origSetTimeout, origSetInterval];
-
-} // End theManWithTheYellowHat function.
+// Monkey patch console object, setTimeout, and setInterval to report to main script appropriately.
+[console, setTimeout, setInterval] = [new AssetConsole, assetAsyncOp(setTimeout), assetAsyncOp(setInterval)];
 
 /***************************
 * self.onmessage
@@ -163,26 +143,24 @@ const theManWithTheYellowHat = () => {
 // to report back at all and times out.
 
 // On receipt of data, eval code and send back one string containing all console output.
-self.onmessage = e => {
 
-  // Monkey patch console object, setTimeout, and setInterval.
-  junglePatch();
+self.onmessage = briefing => {
 
   // Try block for code sent from main script.
   try {
 
     // Eval code sent from main script.
-    eval(e.data);
+    eval(briefing.data);
 
     // If successful, report one string containing all console output compiled together.
-    self.postMessage({ action: 'success', public: console.fullLog });
+    self.postMessage({ action: 'success', public: console.record });
 
   } // End try block for code sent from main script.
 
   // Catch and report error in code if any.
-  catch (err) { self.postMessage({ action: 'failure', public: console.fullLog + `Error: ${err.message}\n` }); }
+  catch (err) { self.postMessage({ action: 'failure', public: console.record + `Error: ${err.message}\n` }); }
 
-  // Restore all monkey patched functions.
-  finally { theManWithTheYellowHat(); }
+  // Erase console.record.
+  finally { console.erase(); }
 
 } // End self.onmessage method.
