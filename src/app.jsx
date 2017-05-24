@@ -45,7 +45,7 @@ class App extends Component {
 
       // String be shown before next console.log content.
       preRecord: '',
-  
+
       // String be shown after next console.log content.
       postRecord: ''
 
@@ -55,26 +55,17 @@ class App extends Component {
     this.ops = {
 
       // Recorder (web worker) receives console.logs on invocation from asset.
-      recorder: new Worker('./src/recorder.js'),
+      recorder: null,
 
       // Asset (web worker) evals code to help keep the main script safe from errors.
       asset: null,
 
       // Channel allows asset to report console.logs to recorder.
-      channel: new MessageChannel
+      channel: null
 
     } // End this.ops object.
 
-    // Open port on recorder for asset to send console.logs as they are invoked.
-    this.ops.recorder.postMessage({ command: 'port' }, [this.ops.channel.port1]);
-
-    // Protocol for receipt of record from recorder.
-    this.ops.recorder.onmessage = record => {
-
-      // Recorder only sends back console.log output.
-      this.renderOutput(record.data);
-
-    } // End this.ops.recorder.onmessage method.
+    this.deployRecorder();
 
     // Bind methods that will be passed to children components.
     this.onchange = this.onchange.bind(this);
@@ -157,20 +148,35 @@ class App extends Component {
   } // End collectRecord method.
 
   /***************************
+   * App.deployRecorder
+  ***************************/
+
+  // Deploy recorder to record data from asset and send back to main script.
+  deployRecorder() {
+
+    // Recruit and deploy new recorder.
+    this.ops.recorder = new Worker('./src/recorder.js');
+
+    // Protocol for receipt of record from recorder.
+    this.ops.recorder.onmessage = record => this.renderOutput(record.data);
+
+  } // End deployRecorder method.
+
+  /***************************
    * App.deployAsset
   ***************************/
 
   // Deploy asset for initial mission and stay deployed for possible asynchronous mission creep.
   deployAsset() {
 
-    // Recruit and deploy asset.
+    // Recruit and deploy new asset.
     this.ops.asset = new Worker('./src/asset.js');
 
     // Update record to indicate that an asset is currently deployed.
     this.ops.assetDeployed = true;
 
-    // Open port on asset to send console.logs as they are invoked to recorder.
-    this.ops.asset.postMessage({ command: 'port' }, [this.ops.channel.port2]);
+    // Create new Message Channel for recorder and asset.
+    this.connectRecorderAndAsset();
 
     // Protocol for receipt of report from asset.
     this.ops.asset.onmessage = report => {
@@ -207,6 +213,24 @@ class App extends Component {
     } // End this.ops.asset.onmessage method.
 
   } // End deployAsset method.
+
+  /***************************
+   * App.connectRecorderAndAsset
+  ***************************/
+
+  // Connect recorder and asset.
+  connectRecorderAndAsset() {
+
+    // Creates new Message Channel for recorder and asset.
+    this.ops.channel = new MessageChannel;
+
+    // Open port on recorder for asset to send console.logs as they are invoked.
+    this.ops.recorder.postMessage({ command: 'port' }, [this.ops.channel.port1]);
+
+    // Open port on asset to send console.logs to recorder as they are invoked.
+    this.ops.asset.postMessage({ command: 'port' }, [this.ops.channel.port2]);
+
+  } // End createChannel method.
 
   /***************************
    * App.briefAsset
