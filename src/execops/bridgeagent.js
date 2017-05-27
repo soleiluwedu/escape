@@ -8,10 +8,10 @@ class BlackBox {
   // BlackBox.constructor
   constructor() {
 
-    // Port to receive communication from asset.
+    // this.port points to port to receive communication from Asset.
     this.port = null;
 
-    // Initialize empty vault to begin saving console.logs sent from Asset.
+    // this.vault stores console.logs sent from Asset.
     this.vault = '';
 
   } // End BlackBox.constructor
@@ -72,7 +72,7 @@ class BlackBox {
   // Box.relay relays mission briefing to Asset.
   briefAsset(mission) {
 
-    // Add record to this.cache.
+    // Send message to Asset with 'execute' command and mission briefing.
     this.port.postMessage({ command: 'execute', mission: mission });
 
   } // End Box.relay
@@ -128,7 +128,6 @@ const box = new BlackBox;
 
 // Protocol for receipt of dossier from headquarters.
 self.onmessage = dossier => {
-  console.log('BRIDGE AGENT => Received from HQ: ' + dossier.data.command);
 
   // Evaluate orders in dossier.
   switch (dossier.data.command) {
@@ -147,7 +146,6 @@ self.onmessage = dossier => {
 
       // Connect port in box.
       box.briefAsset(dossier.data.mission);
-      console.log('BRIDGE AGENT => Mission received from HQ: ' + dossier.data.mission);
 
       // Break to avoid initiating below protocols if any.
       break;

@@ -1,5 +1,5 @@
 /***************************
- * unlace
+ * Thai's unlace function
 ***************************/
 
 // Stringify data to optimize inspection of JavaScript expressions.
@@ -19,10 +19,10 @@ const unlace = data => {
     case onmessage: return 'undefined';
     case this: return '[object Window]';
     case console: return '[object Console]'
-    case console.log: return 'function log() { [native code] }'
-    case console.error: return 'function error() { [native code] }'
-    case setTimeout: return 'function setTimeout() { [native code] })';
-    case setInterval: return 'function setInterval() { [native code] }';
+    case console.log: return 'ƒ log()'
+    case console.error: return 'ƒ error()'
+    case setTimeout: return 'ƒ setTimeout()';
+    case setInterval: return 'ƒ setInterval()';
 
   } // End switch comparing data to blocked expressions.
 
@@ -86,8 +86,6 @@ class AssetConsole {
 
     // Set protocol for receipt of record from Bridge Agent.
     this.port.onmessage = dossier => {
-      origConsole.log('ASSET => Received from BRIDGE AGENT: ' + dossier.data.command);
-      origConsole.log('ASSET => Mission received from BRIDGE AGENT: ' + dossier.data.mission);
 
       // Evaluate orders in dossier.
       switch (dossier.data.command) {
@@ -234,6 +232,7 @@ const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
  * Jungle Patch
 ***************************/
 
+// Saving original console.
 origConsole = console;
 
 // Monkey patch console object, setTimeout, and setInterval to report to bridge agent appropriately.
@@ -245,7 +244,6 @@ origConsole = console;
 
 // Protocol for receipt of dossier from headquarters. HQ communication is limited.
 self.onmessage = dossier => {
-  origConsole.log('ASSET => Received from HQ: ' + dossier.data.command);
 
   // Evaluate orders in dossier.
   switch (dossier.data.command) {
@@ -258,12 +256,6 @@ self.onmessage = dossier => {
 
       // Break to avoid initiating below protocols if any.
       break;
-
-    // Received command to commit suicide.
-    case 'burn':
-
-      // Close Asset operations permanently.
-      self.close()
 
   } // End switch block evaluating dossier.data.command.
 

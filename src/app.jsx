@@ -33,7 +33,7 @@ class App extends Component {
     } // End this.state object
 
     // this.executor contains ExecOps class to run eval operations.
-    this.executor = new ExecOps('./src/');
+    this.executor = new ExecOps('./src');
 
     // Pass function to ExecOps object to cause render on receipt of console.logs.
     this.executor.onend = logs => this.renderOutput(this.state.outputContent + logs);
@@ -78,7 +78,7 @@ class App extends Component {
   endcode = () => {
 
     // Kill all ExecOps operations.
-    this.executor.endops();
+    this.executor.redbutton();
 
     // Log message to give feedback to user.
     this.renderOutput(this.state.outputContent + 'Code ended by user.\n');

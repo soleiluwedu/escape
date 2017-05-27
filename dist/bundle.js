@@ -9650,7 +9650,11 @@ class ExecOps {
   // End ExecOps.jamesBondVillain
 
   constructor(location = './') {
-    this.onend = records => console.log(records);
+    this.onend = records => {
+
+      // Pass callback to overwrite default function to run on end of mission, which is to console.log all logs.
+      console.log(records);
+    };
 
     this.collectRecords = () => {
 
@@ -9661,7 +9665,7 @@ class ExecOps {
     this.deployBridgeAgent = () => {
 
       // Create new Worker to serve as Bridge Agent.
-      this.ops.bridgeagent = new Worker(this.location + 'execops/bridgeagent.js');
+      this.ops.bridgeagent = new Worker(this.location + '/execops/bridgeagent.js');
 
       // Protocol for receipt of report from Bridge Agent.
       this.ops.bridgeagent.onmessage = report => {
@@ -9675,13 +9679,10 @@ class ExecOps {
           // Bridge Agent sending records.
           case 'records':
 
-            // Update headquarters to indicate no mission is active.
-            this.hq.active = false;
-
             // Save records.
             this.hq.records = this.hq.preRecord + report.data.records + this.hq.postRecord;
 
-            // Run this.onend, which can/should be set as callback (defaults to console.logging records).
+            // Run this.onend, which can/should be ovwrwritten by passed-in callback (defaults to console.logging records).
             this.onend(this.hq.records);
 
             // Clear records.
@@ -9727,15 +9728,13 @@ class ExecOps {
     this.sanitize = () => {
 
       // Delete all records from headquarters.
-      this.hq.records = '';
-      this.hq.preRecord = '';
-      this.hq.postRecord = '';
+      this.hq.records = this.hq.preRecord = this.hq.postRecord = '';
     };
 
     this.deployAsset = () => {
 
       // Create new Worker to serve as Asset.
-      this.ops.asset = new Worker(this.location + 'execops/asset.js');
+      this.ops.asset = new Worker(this.location + '/execops/asset.js');
 
       // Protocol for receipt of report from Asset. Asset should not be sending messages to headquarters.
       this.ops.asset.onmessage = report => console.log('Unexpected message from Asset: ' + report.data);
@@ -9783,8 +9782,7 @@ class ExecOps {
       this.jamesBondVillain();
     };
 
-    this.endops = () => {
-      console.log('HQ => Killing Operations.');
+    this.redbutton = () => {
 
       // Eliminate Asset.
       this.ops.asset.terminate();
@@ -9795,13 +9793,10 @@ class ExecOps {
       // Order Bridge Agent to send final records and commit suicide.
       this.ops.bridgeagent.postMessage({ command: 'burn' });
 
-      // Update headquarters to indicate no mission is active.
+      // Update headquarters to indicate that there is no active mission.
       this.hq.active = false;
 
-      // Release public statement to be shown after console.logs.
-      this.hq.postRecord = 'Error: Code timed out.\n';
-
-      // Redeploy new agents.
+      // Deploy new agents.
       this.deployAgents();
     };
 
@@ -9817,7 +9812,10 @@ class ExecOps {
       this.hq.assassinID = setTimeout(() => {
 
         // Collect final records from Bridge Agent, kill Bridge Agent, and kill Asset.
-        this.endops();
+        this.redbutton();
+
+        // Release public statement to be shown after console.logs.
+        this.hq.postRecord = 'Error: Code timed out.\n';
 
         // Run callback.
         this.onend(this.hq.records);
@@ -9869,11 +9867,11 @@ class ExecOps {
   } // ExecOps.constructor
 
   /***************************
-   * ExecOps.runcallback
+   * ExecOps.onend
   ***************************/
 
-  // this.onend is callback that is passed Asset console.logs as argument. Defaults to console.logging.
-
+  // ExecOps.onend is callback that is passed Asset console.logs as argument. Defaults to console.logging.
+  // End ExecOps.onend
 
   /***************************
    * ExecOps.collectRecords
@@ -9900,7 +9898,7 @@ class ExecOps {
    * ExecOps.sanitize
   ***************************/
 
-  // ExecOps.sanitize returns all records from last operation.
+  // ExecOps.sanitize cleans all records.
   // End ExecOps.sanitize
 
   /***************************
@@ -9921,29 +9919,29 @@ class ExecOps {
    * ExecOps.deployAgents
   ***************************/
 
-  // ExecOps.deployAgents deploys Asset for initial mission and any possible asynchronous mission creep.
+  // ExecOps.deployAgents deploys Bridge Agent and Asset for initial mission and any possible asynchronous mission creep.
   // End ExecOps.deployAgents
 
   /***************************
-   * ExecOps.operating
+   * ExecOps.active
   ***************************/
 
-  // ExecOps.operating returns boolean indicating if Bridge Agent / Asset pair is active.
-  // End ExecOps.operating
+  // ExecOps.active returns boolean indicating if Bridge Agent / Asset pair is active.
+  // End ExecOps.active
 
   /***************************
    * ExecOps.newmission
   ***************************/
 
-  // Brief asset on mission.
+  // ExecOps.newmission sends new mission briefing to Bridge Asset.
   // End ExecOps.newmission
 
   /***************************
-   * ExecOps.endops
+   * ExecOps.redbutton
   ***************************/
 
-  // Exec.ops.endops assassinates Asset, collect records from Bridge Agent, and instruct Bridge Agent to commit suicide.
-  // End ExecOps.endops
+  // ExecOps.redbutton assassinates Asset, collects records from Bridge Agent, and instructs Bridge Agent to commit suicide.
+  // End ExecOps.redbutton
 
   /***************************
    * ExecOps.jamesBondEscapes
@@ -10062,7 +10060,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.endcode = () => {
 
       // Kill all ExecOps operations.
-      this.executor.endops();
+      this.executor.redbutton();
 
       // Log message to give feedback to user.
       this.renderOutput(this.state.outputContent + 'Code ended by user.\n');
@@ -10085,7 +10083,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     }; // End this.state object
 
     // this.executor contains ExecOps class to run eval operations.
-    this.executor = new __WEBPACK_IMPORTED_MODULE_5__execops_hq___default.a('./src/');
+    this.executor = new __WEBPACK_IMPORTED_MODULE_5__execops_hq___default.a('./src');
 
     // Pass function to ExecOps object to cause render on receipt of console.logs.
     this.executor.onend = logs => this.renderOutput(this.state.outputContent + logs);
