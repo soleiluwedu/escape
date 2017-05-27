@@ -66,11 +66,11 @@ class App extends Component {
     // Clear output.
     this.renderOutput('');
 
-    // If ExecOps object is still running opertions, cancel new mission.
-    if (this.executor.active()) this.renderOutput('Previous Run Code command is still executing.\n');
+    // If ExecOps object is still running opertions, cancel mission for new mission.
+    if (this.executor.active()) this.endcode();
 
     // Send editor content to ExecOps object to execute.
-    else this.executor.newmission(this.state.editorContent);
+    this.executor.newmission(this.state.editorContent);
 
   } // End App.runcode
 

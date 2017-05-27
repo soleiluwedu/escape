@@ -9647,9 +9647,10 @@ class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
  * API (all lower case method names, as opposed to methods not meant to be part of the API, which are camel case)
  *
- * (ExecOps instance).onend = func(logs) {} // Callback to be set by user. Runs on mission end, and is passed all the console.logs as one argument.
+ * (ExecOps instance).onend = function (consoleLogs) {} // Callback to be set by user. Runs on mission end. Is passed all the console.logs as one argument.
+ * (ExecOps instance).setdeadline = (number of milliseconds) // Sets the number of milliseconds to wait before deciding that we have an infinite loops.
  * (ExecOps instance).newmission(`codeToEvalAsString`) // Use this method to run code that exists in the form one large string to be evaled.
- * (ExecOps instance).active() // Returns boolean indicating if initial code is still running (does not indicate if async functions are active).
+ * (ExecOps instance).active() // Returns boolean indicating if code is currently being executed by web workers.
  * (ExecOps instance).pressredbutton() // Collects console.logs, kills web workers, makes new web workers, and runds the .onend callback.
 
 ***************************/
@@ -9665,6 +9666,12 @@ class ExecOps {
 
       // Pass callback to overwrite this default behavior.
       console.log(records);
+    };
+
+    this.setdeadline = time => {
+
+      // Time in millisecond to wait before deciding to kill Bridge Agent and Asset.
+      this.hq.deadline = time;
     };
 
     this.newmission = mission => {
@@ -9759,6 +9766,9 @@ class ExecOps {
           // Bridge Agent reports asynchronous mission creep.
           case 'async':
 
+            // Update headquarters to indicate no mission is active.
+            this.hq.active = true;
+
             // Deploy new assassin that will give Bridge Agent and Asset plenty of time to escape death.
             this.jamesBondVillain();
 
@@ -9813,11 +9823,11 @@ class ExecOps {
       // Save setTimeout ID of jamesBondVillain to allow cancellation.
       this.hq.assassinID = setTimeout(() => {
 
+        // Add time out error to be shown after console.logs.
+        this.hq.postRecord = 'Error: Code timed out.\n';
+
         // Collect final records from Bridge Agent, kill Bridge Agent, and kill Asset.
         this.pressredbutton();
-
-        // Release public statement to be shown after console.logs.
-        this.hq.postRecord = 'Error: Code timed out.\n';
 
         // Run callback because mission has ended.
         this.onend(this.hq.records);
@@ -9874,6 +9884,13 @@ class ExecOps {
 
   // ExecOps.onend is callback to be run on mission end. It is passed the console.logs as one argument.
   // End ExecOps.onend
+
+  /***************************
+   * ExecOps.setdeadline
+  ***************************/
+
+  // ExecOps.setdeadline sets how long the Bridge Agent has to report back to avoid death for both Bridge Agent and Asset.
+  // End ExecOps.setdeadline
 
   /***************************
    * ExecOps.newmission
@@ -10045,11 +10062,11 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       // Clear output.
       this.renderOutput('');
 
-      // If ExecOps object is still running opertions, cancel new mission.
-      if (this.executor.active()) this.renderOutput('Previous Run Code command is still executing.\n');
+      // If ExecOps object is still running opertions, cancel mission for new mission.
+      if (this.executor.active()) this.endcode();
 
       // Send editor content to ExecOps object to execute.
-      else this.executor.newmission(this.state.editorContent);
+      this.executor.newmission(this.state.editorContent);
     };
 
     this.endcode = () => {

@@ -167,8 +167,8 @@ class AssetConsole {
   } // End AssetConsole.success
 
   /***************************
- * AssetConsole.failure
-***************************/
+   * AssetConsole.failure
+  ***************************/
 
   // AssetConsole.failure reports failure status to Bridge Agent.
   failure() {
@@ -179,8 +179,8 @@ class AssetConsole {
   } // End AssetConsole.failure
 
   /***************************
-* AssetConsole.async
-***************************/
+   * AssetConsole.async
+  ***************************/
 
   // AssetConsole.async reports asynchronous mission creep to Bridge Agent.
   async() {
