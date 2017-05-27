@@ -20,7 +20,7 @@ class Editor extends Component {
     // Local state used for editor-specific settings like key-specific behavior.
     this.state = {
 
-      // How many spaces to add on a tab keydown.
+      // this.state.editorTabSpaces sets how many spaces to add on a tab keydown.
       editorTabSpaces: 2
 
     }; // End this.state.
