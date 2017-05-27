@@ -37,6 +37,9 @@ class ExecOps {
       // this.hq.deadline is Bridge Agent must check in after 'deadline' number of milliseconds, or the pair is killed.
       deadline: 1000,
 
+      // this.hq.records keeps records to be collected as a single string.
+      records: '',
+
       // this.hq.preRecord is text to be shown before next console.log content.
       preRecord: '',
 
@@ -94,8 +97,14 @@ class ExecOps {
           // Update headquarters to indicate no mission is active.
           this.hq.active = false;
 
+          // Save records.
+          this.hq.records = this.hq.preRecord + report.data.records + this.hq.postRecord;
+
           // Run this.onend, which can/should be set as callback (defaults to console.logging records).
-          this.onend(report.data.records);
+          this.onend(this.hq.records);
+
+          // Clear records.
+          this.sanitize();
 
           // Break to avoid initiating below protocols if any.
           break;
@@ -151,6 +160,8 @@ class ExecOps {
 
     // Delete all records from headquarters.
     this.hq.records = '';
+    this.hq.preRecord = '';
+    this.hq.postRecord = '';
 
   } // End ExecOps.sanitize
 
@@ -258,6 +269,9 @@ class ExecOps {
     // Release public statement to be shown after console.logs.
     this.hq.postRecord = 'Error: Code timed out.\n';
 
+    // Redeploy new agents.
+    this.deployAgents();
+
   } // End ExecOps.endops
 
   /***************************
@@ -284,6 +298,9 @@ class ExecOps {
 
       // Collect final records from Bridge Agent, kill Bridge Agent, and kill Asset.
       this.endops();
+
+      // Run callback.
+      this.onend(this.hq.records)
 
     }, this.hq.deadline); // End setTimeout invocation.
 

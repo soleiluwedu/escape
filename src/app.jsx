@@ -59,6 +59,9 @@ class App extends Component {
   // App.runcode clears output and sends editor content to ExecOps object and possibly code-share peers.
   runcode = () => {
 
+    // Clear output.
+    this.renderOutput('');
+
     // If ExecOps object is still running opertions, cancel new mission.
     if (this.executor.active()) this.renderOutput('Previous Run Code command is still executing.\n');
 
