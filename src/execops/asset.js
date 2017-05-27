@@ -87,7 +87,7 @@ class AssetConsole {
     // Set protocol for receipt of record from Bridge Agent.
     this.port.onmessage = dossier => {
 
-      // Evaluate orders in dossier.
+      // Switch block evaluating orders in dossier.
       switch (dossier.data.command) {
 
         // Received command to engage in mission.
@@ -245,7 +245,7 @@ origConsole = console;
 // Protocol for receipt of dossier from headquarters. HQ communication is limited.
 self.onmessage = dossier => {
 
-  // Evaluate orders in dossier.
+  // Switch block evaluating orders in dossier.
   switch (dossier.data.command) {
 
     // Received command to connect port to Bridge Agent.
@@ -257,6 +257,6 @@ self.onmessage = dossier => {
       // Break to avoid initiating below protocols if any.
       break;
 
-  } // End switch block evaluating dossier.data.command.
+  } // End switch block evaluating orders in dossier.
 
 } // End self.onmessage

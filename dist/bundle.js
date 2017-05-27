@@ -9652,11 +9652,23 @@ class ExecOps {
   constructor(location = './') {
     this.onend = records => {
 
-      // Pass callback to overwrite default function to run on end of mission, which is to console.log all logs.
+      // Pass callback to overwrite this default behavior.
       console.log(records);
     };
 
-    this.collectRecords = () => {
+    this.getrecords = () => {
+
+      // Return out records from headquarters.
+      return this.hq.records;
+    };
+
+    this.clear = () => {
+
+      // Set all records and pre or post messages to empty string.
+      this.hq.records = this.hq.preRecord = this.hq.postRecord = '';
+    };
+
+    this.orderReport = () => {
 
       // Post message to Bridge Agent to send back all current records as a single string.
       this.ops.bridgeagent.postMessage({ command: 'send' });
@@ -9673,7 +9685,7 @@ class ExecOps {
         // Call off the hit.
         this.jamesBondEscapes();
 
-        // Further protocol depends on type of report from Bridge Agent.
+        // switch block evaluating report type
         switch (report.data.type) {
 
           // Bridge Agent sending records.
@@ -9682,11 +9694,11 @@ class ExecOps {
             // Save records.
             this.hq.records = this.hq.preRecord + report.data.records + this.hq.postRecord;
 
-            // Run this.onend, which can/should be ovwrwritten by passed-in callback (defaults to console.logging records).
+            // Run this.onend, which can/should be overwritten by passed-in callback (default is to console.log records).
             this.onend(this.hq.records);
 
-            // Clear records.
-            this.sanitize();
+            // Clear mission records from headquarters.
+            this.clear();
 
             // Break to avoid initiating below protocols if any.
             break;
@@ -9701,7 +9713,7 @@ class ExecOps {
             this.hq.active = false;
 
             // Obtain records from Bridge Agent.
-            this.collectRecords();
+            this.orderReport();
 
             // Break to avoid initiating below protocols if any.
             break;
@@ -9715,26 +9727,14 @@ class ExecOps {
             // Break to avoid initiating below protocols if any.
             break;
 
-        } // End switch block on report.data.type
+        } // End switch block evaluating report type
       }; // End ExecOps.ops.bridgeagent.onmessage
-    };
-
-    this.getrecords = () => {
-
-      // Send out records from headquarters.
-      return this.hq.records;
-    };
-
-    this.sanitize = () => {
-
-      // Delete all records from headquarters.
-      this.hq.records = this.hq.preRecord = this.hq.postRecord = '';
     };
 
     this.deployAsset = () => {
 
       // Create new Worker to serve as Asset.
-      this.ops.asset = new Worker(this.location + '/execops/asset.js');
+      this.ops.asset = new Worker(this.location + '/execops/Asset.js');
 
       // Protocol for receipt of report from Asset. Asset should not be sending messages to headquarters.
       this.ops.asset.onmessage = report => console.log('Unexpected message from Asset: ' + report.data);
@@ -9742,13 +9742,13 @@ class ExecOps {
 
     this.connectAgents = () => {
 
-      // Creates new Message Channel for recorder and asset.
+      // Creates new Message Channel for Bridge Agent and Asset.
       this.ops.channel = new MessageChannel();
 
-      // Open port on recorder for asset to send console.logs as they are invoked.
+      // Open port on Bridge Agent for Asset to send console.logs as they are invoked.
       this.ops.bridgeagent.postMessage({ command: 'port' }, [this.ops.channel.port1]);
 
-      // Open port on asset to send console.logs to recorder as they are invoked.
+      // Open port on Asset to send console.logs to Bridge Agent as they are invoked.
       this.ops.asset.postMessage({ command: 'port' }, [this.ops.channel.port2]);
     };
 
@@ -9760,7 +9760,7 @@ class ExecOps {
       // Recruit and deploy new Asset.
       this.deployAsset();
 
-      // Create new Message Channel and send ports to both agents.
+      // Create new Message Channel and send ports to agents.
       this.connectAgents();
     };
 
@@ -9772,8 +9772,8 @@ class ExecOps {
 
     this.newmission = mission => {
 
-      // Send mission briefing to Bridge Agent.
-      this.ops.bridgeagent.postMessage({ command: 'execute', mission: mission });
+      // Send mission briefing to Bridge Agent to relay to Asset.
+      this.ops.bridgeagent.postMessage({ command: 'relay', mission: mission });
 
       // Update headquarters to indicate mission active.
       this.hq.active = true;
@@ -9782,18 +9782,15 @@ class ExecOps {
       this.jamesBondVillain();
     };
 
-    this.redbutton = () => {
+    this.pressredbutton = () => {
 
       // Eliminate Asset.
       this.ops.asset.terminate();
 
-      // Send command to Bridge Agent to send back console.logs.
-      this.collectRecords();
-
       // Order Bridge Agent to send final records and commit suicide.
       this.ops.bridgeagent.postMessage({ command: 'burn' });
 
-      // Update headquarters to indicate that there is no active mission.
+      // Update headquarters to indicate no active mission.
       this.hq.active = false;
 
       // Deploy new agents.
@@ -9812,12 +9809,12 @@ class ExecOps {
       this.hq.assassinID = setTimeout(() => {
 
         // Collect final records from Bridge Agent, kill Bridge Agent, and kill Asset.
-        this.redbutton();
+        this.pressredbutton();
 
         // Release public statement to be shown after console.logs.
         this.hq.postRecord = 'Error: Code timed out.\n';
 
-        // Run callback.
+        // Run callback because mission has ended.
         this.onend(this.hq.records);
       }, this.hq.deadline); // End setTimeout invocation.
     };
@@ -9825,7 +9822,7 @@ class ExecOps {
     // this.location is a string that refers to location of execops folder. If not passed in, './' is used.
     this.location = location;
 
-    // this.ops object has two Workers and one MessageChannel, all to live and die together.
+    // { this.ops object } has two Workers and one MessageChannel, all to live and die together.
     this.ops = {
 
       // this.ops.asset: Asset Worker that evals code (client-side) to help keep the main script safe.
@@ -9839,10 +9836,10 @@ class ExecOps {
 
     }; // End this.ops object
 
-    // this.hq object keeps data concerning operations of Bridge Agent and Asset.
+    // { this.hq object } keeps data concerning operations of Bridge Agent and Asset.
     this.hq = {
 
-      // this.hq.assassinID is setTimeout ID of function to kill Bridge Agent-Asset pair.
+      // this.hq.assassinID is setTimeout ID of function to kill Bridge Agent / Asset pair.
       assassinID: null,
 
       // this.hq.active is boolean to indicate if Agent is currently executing mission.
@@ -9870,22 +9867,8 @@ class ExecOps {
    * ExecOps.onend
   ***************************/
 
-  // ExecOps.onend is callback that is passed Asset console.logs as argument. Defaults to console.logging.
+  // ExecOps.onend is callback to be run on mission end. It is passed the console.logs as one argument.
   // End ExecOps.onend
-
-  /***************************
-   * ExecOps.collectRecords
-  ***************************/
-
-  // ExecOps.collectRecords sends command to Bridge Agent to send back all console.logs received from Asset.
-  // End ExecOps.collectRecords
-
-  /***************************
-   * ExecOps.deployBridgeAgent
-  ***************************/
-
-  // ExecOps.deployBridgeAgent creates Bridge Agent Worker to manage Asset operations and record console.logs.
-  // End ExecOps.deployBridgeAgent
 
   /***************************
    * ExecOps.getrecords
@@ -9895,11 +9878,25 @@ class ExecOps {
   // End ExecOps.getrecords
 
   /***************************
-   * ExecOps.sanitize
+   * ExecOps.clear
   ***************************/
 
-  // ExecOps.sanitize cleans all records.
-  // End ExecOps.sanitize
+  // ExecOps.clear deletes all mission records from headquarters.
+  // End ExecOps.clear
+
+  /***************************
+   * ExecOps.orderReport
+  ***************************/
+
+  // ExecOps.orderReport sends command to Bridge Agent to send back all console.logs received from Asset.
+  // End ExecOps.orderReport
+
+  /***************************
+   * ExecOps.deployBridgeAgent
+  ***************************/
+
+  // ExecOps.deployBridgeAgent creates Bridge Agent Worker to manage Asset operations and record console.logs.
+  // End ExecOps.deployBridgeAgent
 
   /***************************
    * ExecOps.deployAsset
@@ -9912,14 +9909,14 @@ class ExecOps {
    * ExecOps.connectAgents
   ***************************/
 
-  // Connect recorder and asset.
+  // ExecOps.connectAgents connects Bridge Agent and Asset.
   // End ExecOps.connectAgents
 
   /***************************
    * ExecOps.deployAgents
   ***************************/
 
-  // ExecOps.deployAgents deploys Bridge Agent and Asset for initial mission and any possible asynchronous mission creep.
+  // ExecOps.deployAgents deploys Bridge Agent and Asset for initial mission and any asynchronous mission creep.
   // End ExecOps.deployAgents
 
   /***************************
@@ -9933,15 +9930,15 @@ class ExecOps {
    * ExecOps.newmission
   ***************************/
 
-  // ExecOps.newmission sends new mission briefing to Bridge Asset.
+  // ExecOps.newmission sends new mission briefing to Bridge Asset to be relayed to Asset.
   // End ExecOps.newmission
 
   /***************************
-   * ExecOps.redbutton
+   * ExecOps.pressredbutton
   ***************************/
 
-  // ExecOps.redbutton assassinates Asset, collects records from Bridge Agent, and instructs Bridge Agent to commit suicide.
-  // End ExecOps.redbutton
+  // ExecOps.pressredbutton assassinates Asset, collects records from Bridge Agent, and instructs Bridge Agent to commit suicide.
+  // End ExecOps.pressredbutton
 
   /***************************
    * ExecOps.jamesBondEscapes
@@ -10037,7 +10034,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     // Props included for good practice, not out of necessity.
     super(props);
 
-    // this.state object serves as part of standard React data flow.
+    // { this.state object } serves as part of standard React data flow.
 
     this.onchange = e => {
 
@@ -10060,7 +10057,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.endcode = () => {
 
       // Kill all ExecOps operations.
-      this.executor.redbutton();
+      this.executor.pressredbutton();
 
       // Log message to give feedback to user.
       this.renderOutput(this.state.outputContent + 'Code ended by user.\n');

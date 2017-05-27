@@ -29,7 +29,7 @@ class BlackBox {
     // Protocol for receipt of record from Asset.
     this.port.onmessage = report => {
 
-      // Evaluating report type.
+      // Switch block evaluating report type
       switch (report.data.type) {
 
         // Asset is adding a console.log to the records.
@@ -70,7 +70,7 @@ class BlackBox {
   ***************************/
 
   // Box.relay relays mission briefing to Asset.
-  briefAsset(mission) {
+  relay(mission) {
 
     // Send message to Asset with 'execute' command and mission briefing.
     this.port.postMessage({ command: 'execute', mission: mission });
@@ -141,11 +141,11 @@ self.onmessage = dossier => {
       // Break to avoid initiating below protocols if any.
       break;
 
-    // Received command to execute new mission.
-    case 'execute':
+    // Received command to relay mission briefing to Asset.
+    case 'relay':
 
-      // Connect port in box.
-      box.briefAsset(dossier.data.mission);
+      // Relay mission briefing to Asset.
+      box.relay(dossier.data.mission);
 
       // Break to avoid initiating below protocols if any.
       break;

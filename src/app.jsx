@@ -21,7 +21,7 @@ class App extends Component {
     // Props included for good practice, not out of necessity.
     super(props);
 
-    // this.state object serves as part of standard React data flow.
+    // { this.state object } serves as part of standard React data flow.
     this.state = {
 
       // this.state.editorContent is the value of editor textarea.
@@ -78,7 +78,7 @@ class App extends Component {
   endcode = () => {
 
     // Kill all ExecOps operations.
-    this.executor.redbutton();
+    this.executor.pressredbutton();
 
     // Log message to give feedback to user.
     this.renderOutput(this.state.outputContent + 'Code ended by user.\n');
