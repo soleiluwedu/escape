@@ -2,6 +2,17 @@
  * ExecOps class
 ***************************/
 
+/***************************
+
+ * API (all lower case method names, as opposed to methods not meant to be part of the API, which are camel case)
+ *
+ * (ExecOps instance).onend = func(logs) {} // Callback to be set by user. Runs on mission end, and is passed all the console.logs as one argument.
+ * (ExecOps instance).newmission(`codeToEvalAsString`); // Use this method to run code that exists in the form one large string to be evaled.
+ * (ExecOps instance).active() // Returns boolean indicating if initial code is still running (does not indicate if async functions are active).
+ * (ExecOps instance).pressredbutton() // Collects console.logs, kills web workers, makes new web workers, and runds the .onend callback.
+
+***************************/
+
 // ExecOps class executes code (to be evaled as a single string) and reports back console.logs and/or errors.
 class ExecOps {
 
@@ -66,16 +77,55 @@ class ExecOps {
   } // End ExecOps.onend
 
   /***************************
-   * ExecOps.getrecords
+   * ExecOps.newmission
   ***************************/
 
-  // ExecOps.getrecords returns all records from last operation.
-  getrecords = () => {
+  // ExecOps.newmission sends new mission briefing to Bridge Asset to be relayed to Asset.
+  newmission = mission => {
 
-    // Return out records from headquarters.
-    return this.hq.records;
+    // Send mission briefing to Bridge Agent to relay to Asset.
+    this.ops.bridgeagent.postMessage({ command: 'relay', mission: mission });
 
-  } // End ExecOps.getrecords
+    // Update headquarters to indicate mission active.
+    this.hq.active = true;
+
+    // Put out a hit on the Bridge Agent / Asset pair that will be cancelled if Bridge Agent reports back in time.
+    this.jamesBondVillain();
+
+  } // End ExecOps.newmission
+
+  /***************************
+   * ExecOps.active
+  ***************************/
+
+  // ExecOps.active returns boolean indicating if Bridge Agent / Asset pair is active.
+  active = () => {
+
+    // Use this.hq.deployed boolean.
+    return this.hq.active;
+
+  } // End ExecOps.active
+
+  /***************************
+   * ExecOps.pressredbutton
+  ***************************/
+
+  // ExecOps.pressredbutton assassinates Asset, collects records from Bridge Agent, and instructs Bridge Agent to commit suicide.
+  pressredbutton = () => {
+
+    // Eliminate Asset.
+    this.ops.asset.terminate();
+
+    // Order Bridge Agent to send final records and commit suicide.
+    this.ops.bridgeagent.postMessage({ command: 'burn' });
+
+    // Update headquarters to indicate no active mission.
+    this.hq.active = false;
+
+    // Deploy new agents.
+    this.deployAgents();
+
+  } // End ExecOps.pressredbutton
 
   /***************************
    * ExecOps.erase
@@ -215,57 +265,6 @@ class ExecOps {
     this.connectAgents();
 
   } // End ExecOps.deployAgents
-
-  /***************************
-   * ExecOps.active
-  ***************************/
-
-  // ExecOps.active returns boolean indicating if Bridge Agent / Asset pair is active.
-  active = () => {
-
-    // Use this.hq.deployed boolean.
-    return this.hq.active;
-
-  } // End ExecOps.active
-
-  /***************************
-   * ExecOps.newmission
-  ***************************/
-
-  // ExecOps.newmission sends new mission briefing to Bridge Asset to be relayed to Asset.
-  newmission = mission => {
-
-    // Send mission briefing to Bridge Agent to relay to Asset.
-    this.ops.bridgeagent.postMessage({ command: 'relay', mission: mission });
-
-    // Update headquarters to indicate mission active.
-    this.hq.active = true;
-
-    // Put out a hit on the Bridge Agent / Asset pair that will be cancelled if Bridge Agent reports back in time.
-    this.jamesBondVillain();
-
-  } // End ExecOps.newmission
-
-  /***************************
-   * ExecOps.pressredbutton
-  ***************************/
-
-  // ExecOps.pressredbutton assassinates Asset, collects records from Bridge Agent, and instructs Bridge Agent to commit suicide.
-  pressredbutton = () => {
-
-    // Eliminate Asset.
-    this.ops.asset.terminate();
-
-    // Order Bridge Agent to send final records and commit suicide.
-    this.ops.bridgeagent.postMessage({ command: 'burn' });
-
-    // Update headquarters to indicate no active mission.
-    this.hq.active = false;
-
-    // Deploy new agents.
-    this.deployAgents();
-
-  } // End ExecOps.pressredbutton
 
   /***************************
    * ExecOps.jamesBondEscapes
