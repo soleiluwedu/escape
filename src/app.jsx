@@ -3,6 +3,7 @@ import { render } from 'react-dom';
 import Editor from './editor.jsx';
 import Button from './button.jsx';
 import Output from './output.jsx';
+import ExecOps from './execops/hq';
 
 /***************************
  * App Component
@@ -31,11 +32,11 @@ class App extends Component {
 
     } // End this.state object
 
-    // Bind App Component methods that will be passed to children components.
-    this.onchange = this.onchange.bind(this);
-    this.runcode = this.runcode.bind(this);
-    this.endcode = this.endcode.bind(this);
-    this.renderOutput = this.renderOutput.bind(this);
+    // this.executor contains ExecOps class to run eval operations.
+    this.executor = new ExecOps;
+
+    // Pass function to ExecOps object to cause render on receipt of console.logs.
+    this.executor.onend = logs => this.renderOutput(logs);
 
   } // End App.constructor
 
@@ -43,8 +44,8 @@ class App extends Component {
    * App.onchange
   ***************************/
 
-  // App.onchange keeps track of editor text to send to ExecOps and possibly for code-sharing.
-  onchange(e) {
+  // App.onchange keeps track of editor text to send to ExecOps object and possibly for code-sharing.
+  onchange = e => {
 
     // Save editor content.
     this.setState({ editorContent: e.target.value });
@@ -55,14 +56,14 @@ class App extends Component {
    * App.runcode
   ***************************/
 
-  // App.runcode clears output and sends editor content to ExecOps and possibly code-share peers.
-  runcode() {
+  // App.runcode clears output and sends editor content to ExecOps object and possibly code-share peers.
+  runcode = () => {
 
-    // Clear Output Component's content.
-    this.renderOutput('');
+    // If ExecOps object is still running opertions, cancel new mission.
+    if (this.executor.active()) this.renderOutput('Previous Run Code command is still executing.\n');
 
-    // Send Editor Component's content to ExecOps.
-    this.briefAsset(this.state.editorContent);
+    // Send editor content to ExecOps object to execute.
+    else this.executor.newmission(this.state.editorContent);
 
   } // End App.runcode
 
@@ -71,14 +72,10 @@ class App extends Component {
   ***************************/
 
   // App.endcode terminates ExecOps operations.
-  endcode() {
-    console.info('MAIN: console.log is ' + console.log);
+  endcode = () => {
 
-    // End asset's contract in the most permanent manner possible.
-    this.killAsset();
-
-    // Release a PR statement.
-    this.renderOutput(this.state.outputContent + 'Code ended.\n');
+    // Kill all ExecOps operations.
+    this.executor.theRedButton();
 
   } // End App.endcode
 
@@ -87,16 +84,10 @@ class App extends Component {
   ***************************/
 
   // App.renderOutput prints text to the output that serves as an in-app console.
-  renderOutput(output) {
-
-    // Add any pre or post messages handed down from this.shadowState.
-    const totalOutput = this.shadowState.preRecord + output + this.shadowState.postRecord;
-
-    // Pre and post messages can be wiped after collection.
-    this.shadowState.preRecord = this.shadowState.postRecord = '';
+  renderOutput = output => {
 
     // Show output to user. Output will be single string split on '\n' to make list items.
-    this.setState({ outputContent: totalOutput });
+    this.setState({ outputContent: output });
 
   } // End App.renderOutput
 

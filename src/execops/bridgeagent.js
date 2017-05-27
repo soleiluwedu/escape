@@ -53,6 +53,12 @@ class BlackBox {
         // Asset reports asynchronous mission creep.
         case 'async':
 
+          // Report mission status to headquarters.
+          self.postMessage({ type: report.data.type })
+
+          // Break to avoid initiating below protocols if any.
+          break;
+
       } // End switch block evaluating report type.
 
     } // End AssetConsole.port.onmessage
@@ -84,28 +90,28 @@ class BlackBox {
   } // End Box.record
 
   /***************************
-   * BlackBox.send
+   * BlackBox.getrecords
   ***************************/
 
-  // BlackBox.send sends console.logs to headquarters.
-  send = () => {
+  // BlackBox.getrecords returns vault contents.
+  getrecords = () => {
 
-    // Send console.logs to headquarters.
-    self.postMessage(this.vault);
+    // Return contents of vault.
+    return this.vault;
 
-  } // End BlackBox.send
+  } // End BlackBox.getrecords
 
   /***************************
-   * BlackBox.reset
+   * BlackBox.sanitize
   ***************************/
 
-  // BlackBox.reset empties out the vault so future reports to headquarters do not have duplicate content.
-  reset = () => {
+  // BlackBox.sanitize empties out the vault so future reports to headquarters do not have duplicate content.
+  sanitize = () => {
 
     // Set this.vault to empty string.
     this.vault = '';
 
-  } // End BlackBox.reset
+  } // End BlackBox.sanitize
 
 } // End BlackBox class.
 
@@ -148,10 +154,10 @@ self.onmessage = dossier => {
     case 'send':
 
       // Send console.logs to headquarters.
-      box.send();
+      self.postMessage({ type: 'records', records: box.getrecords() });
 
-      // Erase records.
-      box.reset();
+      // Erase records to prevent duplicate data instances on next send.
+      box.sanitize();
 
       // Break to avoid initiating below protocols if any.
       break;
@@ -160,7 +166,7 @@ self.onmessage = dossier => {
     case 'burn':
 
       // Send final console.logs to headquarters.
-      box.send();
+      self.postMessage({ type: 'records', records: box.getrecords() });
 
       // Commit suicide.
       self.close();

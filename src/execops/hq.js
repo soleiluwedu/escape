@@ -28,17 +28,14 @@ class ExecOps {
     // this.hq object keeps data concerning operations of Bridge Agent and Asset.
     this.hq = {
 
-      // this.hq.deployed is boolean to indicate if there is a Bridge Agent-Asset pair deployed.
-      deployed: false,
-
       // this.hq.assassinID is setTimeout ID of function to kill Bridge Agent-Asset pair.
       assassinID: null,
 
+      // this.hq.deployed is boolean to indicate if there is a Bridge Agent-Asset pair deployed.
+      deployed: false,
+
       // this.hq.deadline is Bridge Agent must check in after 'deadline' number of milliseconds, or the pair is killed.
       deadline: 1000,
-
-      // this.hq.onMissionEnd is function to be set by owner of ExecOps instance.
-      onend: () => console.log('Need to pass function to ExecOps to be executed on mission end.'),
 
       // this.hq.preRecord is text to be shown before next console.log content.
       preRecord: '',
@@ -51,16 +48,11 @@ class ExecOps {
   } // ExecOps.constructor
 
   /***************************
-   * ExecOps.runonend
+   * ExecOps.runcallback
   ***************************/
 
-  // ExecOps.runonend accepts and saves function as this.hq.onend.
-  runonend = func => {
-
-    // this.hq.onend to be run when Bridge Agent reports either mission success or mission failure.
-    this.hq.onend = func;
-
-  } // End ExecOps.runonend
+  // this.onend is callback that is passed Asset console.logs as argument. Defaults to console.logging.
+  onend = records => console.log(records);
 
   /***************************
    * ExecOps.collectRecords
@@ -91,7 +83,16 @@ class ExecOps {
       this.jamesBondEscapes();
 
       // Further protocol depends on type of report from Bridge Agent.
-      switch (report.data.status) {
+      switch (report.data.type) {
+
+        // Bridge Agent sending records.
+        case 'records':
+
+          // Run this.onend, which can/should be set as callback (defaults to console.logging records).
+          this.onend(report.data.records);
+
+          // Break to avoid initiating below protocols if any.
+          break;
 
         // Bridge Agent reports mission success.
         case 'success':
@@ -114,11 +115,35 @@ class ExecOps {
           // Break to avoid initiating below protocols if any.
           break;
 
-      } // End switch block on report.data.status
+      } // End switch block on report.data.type
 
     } // End ExecOps.ops.bridgeagent.onmessage
 
   } // End ExecOps.deployBridgeAgent
+
+  /***************************
+   * ExecOps.getrecords
+  ***************************/
+
+  // ExecOps.getrecords returns all records from last operation.
+  getrecords = () => {
+
+    // Send out records from headquarters.
+    return this.hq.records;
+
+  } // End ExecOps.getrecords
+
+  /***************************
+   * ExecOps.sanitize
+  ***************************/
+
+  // ExecOps.sanitize returns all records from last operation.
+  sanitize = () => {
+
+    // Delete all records from headquarters.
+    this.hq.records = '';
+
+  } // End ExecOps.sanitize
 
   /***************************
    * ExecOps.deployAsset
@@ -202,17 +227,17 @@ class ExecOps {
   } // End ExecOps.newmission
 
   /***************************
-   * ExecOps.codeRed
+   * ExecOps.theRedButton
   ***************************/
 
   // Assassinate asset.
-  codeRed = () => {
+  theRedButton = () => {
 
     // Eliminate Asset.
     this.ops.asset.terminate();
 
     // Send command to Bridge Agent to send back console.logs.
-    this.collectRecord();
+    this.collectRecords();
 
     // Order Bridge Agent to send final records and commit suicide.
     this.ops.bridgegent.postMessage({ command: 'burn' });
@@ -223,7 +248,7 @@ class ExecOps {
     // Release public statement to be shown after console.logs.
     this.hq.postRecord = 'Error: Code timed out.\n';
 
-  } // End ExecOps.codeRed
+  } // End ExecOps.theRedButton
 
   /***************************
    * ExecOps.jamesBondEscapes
