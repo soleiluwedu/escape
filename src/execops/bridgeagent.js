@@ -21,7 +21,7 @@ class BlackBox {
   ***************************/
 
   // BlackBox.connect sets port to allow communication from Asset.
-  connect = port => {
+  connect(port) {
 
     // Set port to given argument.
     this.port = port;
@@ -70,7 +70,7 @@ class BlackBox {
   ***************************/
 
   // Box.relay relays mission briefing to Asset.
-  briefAsset = mission => {
+  briefAsset(mission) {
 
     // Add record to this.cache.
     this.port.postMessage({ command: 'execute', mission: mission });
@@ -82,7 +82,7 @@ class BlackBox {
   ***************************/
 
   // Box.record saves data from asset into vault to be collected all at once from headquarters.
-  record = recording => {
+  record(recording) {
 
     // Add record to this.cache.
     this.vault += recording;
@@ -94,7 +94,7 @@ class BlackBox {
   ***************************/
 
   // BlackBox.getrecords returns vault contents.
-  getrecords = () => {
+  getrecords() {
 
     // Return contents of vault.
     return this.vault;
@@ -106,7 +106,7 @@ class BlackBox {
   ***************************/
 
   // BlackBox.sanitize empties out the vault so future reports to headquarters do not have duplicate content.
-  sanitize = () => {
+  sanitize() {
 
     // Set this.vault to empty string.
     this.vault = '';
@@ -128,6 +128,7 @@ const box = new BlackBox;
 
 // Protocol for receipt of dossier from headquarters.
 self.onmessage = dossier => {
+  console.log('BRIDGE AGENT => Received from HQ: ' + dossier.data.command);
 
   // Evaluate orders in dossier.
   switch (dossier.data.command) {
@@ -146,6 +147,7 @@ self.onmessage = dossier => {
 
       // Connect port in box.
       box.briefAsset(dossier.data.mission);
+      console.log('BRIDGE AGENT => Mission received from HQ: ' + dossier.data.mission);
 
       // Break to avoid initiating below protocols if any.
       break;

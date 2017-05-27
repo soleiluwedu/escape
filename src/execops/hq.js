@@ -31,8 +31,8 @@ class ExecOps {
       // this.hq.assassinID is setTimeout ID of function to kill Bridge Agent-Asset pair.
       assassinID: null,
 
-      // this.hq.deployed is boolean to indicate if there is a Bridge Agent-Asset pair deployed.
-      deployed: false,
+      // this.hq.active is boolean to indicate if Agent is currently executing mission.
+      active: false,
 
       // this.hq.deadline is Bridge Agent must check in after 'deadline' number of milliseconds, or the pair is killed.
       deadline: 1000,
@@ -44,6 +44,9 @@ class ExecOps {
       postRecord: '',
 
     } // End this.hq object
+
+    // Deploy agents upon instantiation.
+    this.deployAgents();
 
   } // ExecOps.constructor
 
@@ -88,6 +91,9 @@ class ExecOps {
         // Bridge Agent sending records.
         case 'records':
 
+          // Update headquarters to indicate no mission is active.
+          this.hq.active = false;
+
           // Run this.onend, which can/should be set as callback (defaults to console.logging records).
           this.onend(report.data.records);
 
@@ -99,6 +105,9 @@ class ExecOps {
 
         // Bridge Agent reports mission failure.
         case 'failure':
+
+          // Update headquarters to indicate no mission is active.
+          this.hq.active = false;
 
           // Obtain records from Bridge Agent.
           this.collectRecords();
@@ -191,9 +200,6 @@ class ExecOps {
     // Recruit and deploy new Asset.
     this.deployAsset();
 
-    // Update record to indicate that a Bridge Agent / Asset pair is currently deployed.
-    this.hq.deployed = true;
-
     // Create new Message Channel and send ports to both agents.
     this.connectAgents();
 
@@ -207,7 +213,7 @@ class ExecOps {
   active = () => {
 
     // Use this.hq.deployed boolean.
-    return this.hq.deployed;
+    return this.hq.active;
 
   } // End ExecOps.operating
 
@@ -219,7 +225,10 @@ class ExecOps {
   newmission = mission => {
 
     // Send mission briefing to Bridge Agent.
-    this.ops.asset.postMessage({ command: 'execute', mission: mission });
+    this.ops.bridgeagent.postMessage({ command: 'execute', mission: mission });
+
+    // Update headquarters to indicate mission active.
+    this.hq.active = true;
 
     // Put out a hit on the Bridge Agent / Asset pair that will be cancelled if Bridge Agent reports back in time.
     this.jamesBondVillain();
@@ -227,11 +236,12 @@ class ExecOps {
   } // End ExecOps.newmission
 
   /***************************
-   * ExecOps.theRedButton
+   * ExecOps.endops
   ***************************/
 
-  // Assassinate asset.
-  theRedButton = () => {
+  // Exec.ops.endops assassinates Asset, collect records from Bridge Agent, and instruct Bridge Agent to commit suicide.
+  endops = () => {
+    console.log('HQ => Killing Operations.');
 
     // Eliminate Asset.
     this.ops.asset.terminate();
@@ -240,21 +250,21 @@ class ExecOps {
     this.collectRecords();
 
     // Order Bridge Agent to send final records and commit suicide.
-    this.ops.bridgegent.postMessage({ command: 'burn' });
+    this.ops.bridgeagent.postMessage({ command: 'burn' });
 
-    // Update record to indicate no agents currently deployed.
-    this.ops.deployed = false;
+    // Update headquarters to indicate no mission is active.
+    this.hq.active = false;
 
     // Release public statement to be shown after console.logs.
     this.hq.postRecord = 'Error: Code timed out.\n';
 
-  } // End ExecOps.theRedButton
+  } // End ExecOps.endops
 
   /***************************
    * ExecOps.jamesBondEscapes
   ***************************/
 
-  // Cancel assassination mission.
+  // ExecOps.jamesBondEscapes cancels assassination mission.
   jamesBondEscapes = () => {
 
     // Call off the hit.
@@ -273,7 +283,7 @@ class ExecOps {
     this.hq.assassinID = setTimeout(() => {
 
       // Collect final records from Bridge Agent, kill Bridge Agent, and kill Asset.
-      this.codeRed();
+      this.endops();
 
     }, this.hq.deadline); // End setTimeout invocation.
 

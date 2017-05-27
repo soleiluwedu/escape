@@ -79,13 +79,15 @@ class AssetConsole {
   ***************************/
 
   // AssetConsole.connect sets port to communicate with Bridge Agent.
-  connect = port => {
+  connect(port) {
 
     // Set port to given argument.
     this.port = port;
 
     // Set protocol for receipt of record from Bridge Agent.
     this.port.onmessage = dossier => {
+      origConsole.log('ASSET => Received from BRIDGE AGENT: ' + dossier.data.command);
+      origConsole.log('ASSET => Mission received from BRIDGE AGENT: ' + dossier.data.mission);
 
       // Evaluate orders in dossier.
       switch (dossier.data.command) {
@@ -129,7 +131,7 @@ class AssetConsole {
   ***************************/
 
   // AssetConsole.log sends console.logs to Bridge Agent.
-  log = () => {
+  log() {
 
     // Make array from argumengs to gain native array method functionality.
     const args = Array.from(arguments);
@@ -144,7 +146,7 @@ class AssetConsole {
   ***************************/
 
   // AssetConsole.error sends errors to Bridge Agent.
-  error = () => {
+  error() {
 
     // Make array from argumengs to gain native array method functionality.
     const args = Array.from(arguments);
@@ -159,7 +161,7 @@ class AssetConsole {
   ***************************/
 
   // AssetConsole.success reports success status to Bridge Agent.
-  success = () => {
+  success() {
 
     // Report success status to Bridge Agent.
     this.port.postMessage({ type: 'success' });
@@ -171,7 +173,7 @@ class AssetConsole {
 ***************************/
 
   // AssetConsole.failure reports failure status to Bridge Agent.
-  failure = () => {
+  failure() {
 
     // Report failure status to Bridge Agent.
     this.port.postMessage({ type: 'failure' });
@@ -183,7 +185,7 @@ class AssetConsole {
 ***************************/
 
   // AssetConsole.async reports asynchronous mission creep to Bridge Agent.
-  async = () => {
+  async() {
 
     // Report async status to Bridge Agent.
     this.port.postMessage({ type: 'async' });
@@ -232,6 +234,8 @@ const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
  * Jungle Patch
 ***************************/
 
+origConsole = console;
+
 // Monkey patch console object, setTimeout, and setInterval to report to bridge agent appropriately.
 [console, setTimeout, setInterval] = [new AssetConsole, assetAsyncOp(setTimeout), assetAsyncOp(setInterval)];
 
@@ -241,6 +245,7 @@ const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
 
 // Protocol for receipt of dossier from headquarters. HQ communication is limited.
 self.onmessage = dossier => {
+  origConsole.log('ASSET => Received from HQ: ' + dossier.data.command);
 
   // Evaluate orders in dossier.
   switch (dossier.data.command) {
