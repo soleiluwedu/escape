@@ -9645,7 +9645,7 @@ class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
 /***************************
 
- * API (all lower case method names, as opposed to methods not meant to be part of the API, which are camel case)
+ * ExecOps API (all lower case method names, as opposed to methods not meant to be part of the API, which are camel case)
  *
  * (ExecOps instance).onend = function (consoleLogs) {} // Callback to be set by user. Runs on mission end. Is passed all the console.logs as one argument.
  * (ExecOps instance).setdeadline = (number of milliseconds) // Sets the number of milliseconds to wait before deciding that we have an infinite loops.
