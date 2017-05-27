@@ -9700,7 +9700,7 @@ class ExecOps {
       this.deployAgents();
     };
 
-    this.erase = () => {
+    this.clearRecords = () => {
 
       // Set all records and pre / post messages to empty string.
       this.hq.records = this.hq.preRecord = this.hq.postRecord = '';
@@ -9736,7 +9736,7 @@ class ExecOps {
             this.onend(this.hq.records);
 
             // Erase mission records from headquarters.
-            this.erase();
+            this.clearRecords();
 
             // Break to avoid initiating below protocols if any.
             break;
@@ -9897,11 +9897,11 @@ class ExecOps {
   // End ExecOps.pressredbutton
 
   /***************************
-   * ExecOps.erase
+   * ExecOps.clearRecords
   ***************************/
 
-  // ExecOps.erase deletes all mission records from headquarters.
-  // End ExecOps.erase
+  // ExecOps.clearRecords deletes all mission records from headquarters.
+  // End ExecOps.clearRecords
 
   /***************************
    * ExecOps.orderReport

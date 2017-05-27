@@ -128,16 +128,16 @@ class ExecOps {
   } // End ExecOps.pressredbutton
 
   /***************************
-   * ExecOps.erase
+   * ExecOps.clearRecords
   ***************************/
 
-  // ExecOps.erase deletes all mission records from headquarters.
-  erase = () => {
+  // ExecOps.clearRecords deletes all mission records from headquarters.
+  clearRecords = () => {
 
     // Set all records and pre / post messages to empty string.
     this.hq.records = this.hq.preRecord = this.hq.postRecord = '';
 
-  } // End ExecOps.erase
+  } // End ExecOps.clearRecords
 
   /***************************
    * ExecOps.orderReport
@@ -180,7 +180,7 @@ class ExecOps {
           this.onend(this.hq.records);
 
           // Erase mission records from headquarters.
-          this.erase();
+          this.clearRecords();
 
           // Break to avoid initiating below protocols if any.
           break;
