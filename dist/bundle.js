@@ -9648,7 +9648,7 @@ class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
  * API (all lower case method names, as opposed to methods not meant to be part of the API, which are camel case)
  *
  * (ExecOps instance).onend = func(logs) {} // Callback to be set by user. Runs on mission end, and is passed all the console.logs as one argument.
- * (ExecOps instance).newmission(`codeToEvalAsString`); // Use this method to run code that exists in the form one large string to be evaled.
+ * (ExecOps instance).newmission(`codeToEvalAsString`) // Use this method to run code that exists in the form one large string to be evaled.
  * (ExecOps instance).active() // Returns boolean indicating if initial code is still running (does not indicate if async functions are active).
  * (ExecOps instance).pressredbutton() // Collects console.logs, kills web workers, makes new web workers, and runds the .onend callback.
 
