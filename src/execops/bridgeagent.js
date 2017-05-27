@@ -38,8 +38,8 @@ class BlackBox {
         // Asset is adding a console.error to the records.
         case 'adderr':
 
-          // Add record from Asset to vault.
-          this.record(report.data.record);
+          // Save record from Asset to vault.
+          this.save(report.data.record);
 
           // Break to avoid initiating below protocols if any.
           break;
@@ -78,16 +78,16 @@ class BlackBox {
   } // End Box.relay
 
   /***************************
-   * BlackBox.record
+   * BlackBox.save
   ***************************/
 
-  // Box.record saves data from asset into vault to be collected all at once from headquarters.
-  record(recording) {
+  // Box.save keeps data from asset in vault to be collected all at once from headquarters.
+  save(recording) {
 
-    // Add record to this.cache.
+    // Add recording to vault.
     this.vault += recording;
 
-  } // End Box.record
+  } // End Box.save
 
   /***************************
    * BlackBox.getrecords
@@ -102,31 +102,31 @@ class BlackBox {
   } // End BlackBox.getrecords
 
   /***************************
-   * BlackBox.sanitize
+   * BlackBox.erase
   ***************************/
 
-  // BlackBox.sanitize empties out the vault so future reports to headquarters do not have duplicate content.
-  sanitize() {
+  // BlackBox.erase empties out the vault to prevent duplicate content on subsequent reports.
+  erase() {
 
     // Set this.vault to empty string.
     this.vault = '';
 
-  } // End BlackBox.sanitize
+  } // End BlackBox.erase
 
-} // End BlackBox class.
+} // End BlackBox class
 
 /***************************
  * Black Box instance
 ***************************/
 
-// Instantiate Black Box object to receive records from asset.
+// Instantiate Black Box object to receive records from Asset.
 const box = new BlackBox;
 
 /***************************
  * self.onmessage
 ***************************/
 
-// Protocol for receipt of dossier from headquarters.
+// self.onmessage serves as protocol for receipt of dossier from headquarters.
 self.onmessage = dossier => {
 
   // Evaluate orders in dossier.
@@ -157,7 +157,7 @@ self.onmessage = dossier => {
       self.postMessage({ type: 'records', records: box.getrecords() });
 
       // Erase records to prevent duplicate data instances on next send.
-      box.sanitize();
+      box.erase();
 
       // Break to avoid initiating below protocols if any.
       break;

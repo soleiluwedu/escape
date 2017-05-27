@@ -78,22 +78,22 @@ class ExecOps {
   } // End ExecOps.getrecords
 
   /***************************
-   * ExecOps.clear
+   * ExecOps.erase
   ***************************/
 
-  // ExecOps.clear deletes all mission records from headquarters.
-  clear = () => {
+  // ExecOps.erase deletes all mission records from headquarters.
+  erase = () => {
 
-    // Set all records and pre or post messages to empty string.
+    // Set all records and pre / post messages to empty string.
     this.hq.records = this.hq.preRecord = this.hq.postRecord = '';
 
-  } // End ExecOps.clear
+  } // End ExecOps.erase
 
   /***************************
    * ExecOps.orderReport
   ***************************/
 
-  // ExecOps.orderReport sends command to Bridge Agent to send back all console.logs received from Asset.
+  // ExecOps.orderReport sends command to Bridge Agent to report back all console.logs received from Asset.
   orderReport = () => {
 
     // Post message to Bridge Agent to send back all current records as a single string.
@@ -129,8 +129,8 @@ class ExecOps {
           // Run this.onend, which can/should be overwritten by passed-in callback (default is to console.log records).
           this.onend(this.hq.records);
 
-          // Clear mission records from headquarters.
-          this.clear();
+          // Erase mission records from headquarters.
+          this.erase();
 
           // Break to avoid initiating below protocols if any.
           break;

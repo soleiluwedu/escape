@@ -242,7 +242,7 @@ origConsole = console;
  * self.onmessage
 ***************************/
 
-// Protocol for receipt of dossier from headquarters. HQ communication is limited.
+// self.onmessage serves as protocol for receipt of dossier from headquarters.
 self.onmessage = dossier => {
 
   // Switch block evaluating orders in dossier.

@@ -32,6 +32,10 @@ class App extends Component {
 
     } // End this.state object
 
+    /***************************
+     * ExecOps instance
+    ***************************/
+
     // this.executor contains ExecOps class to run eval operations.
     this.executor = new ExecOps('./src');
 
