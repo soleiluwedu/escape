@@ -54,7 +54,7 @@ class BlackBox {
         case 'async':
 
           // Report mission status to headquarters.
-          self.postMessage({ type: report.data.type })
+          this.reportStatus(report.data.type);
 
           // Break to avoid initiating below protocols if any.
           break;
@@ -76,6 +76,18 @@ class BlackBox {
     this.assetPort.postMessage({ command: 'execute', mission: mission });
 
   } // End Box.relay
+
+  /***************************
+   * BlackBox.reportStatus
+  ***************************/
+
+  // BlackBox.reportStatus sends report to headquarters to indicate status of operations.
+  reportStatus(status) {
+
+    // Report mission status to headquarters.
+    self.postMessage({ type: status });
+    
+  } // End BlackBox.reportStatus
 
   /***************************
    * BlackBox.save
