@@ -10105,6 +10105,9 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
     // Pass function to ExecOps object to cause render on receipt of console.logs.
     this.executor.onend = logs => this.renderOutput(this.state.outputContent + logs);
+
+    // Specify to give code 1000 milliseconds to finish evalling.
+    this.executor.setdeadline(1000);
   } // End App.constructor
 
   /***************************
