@@ -40,7 +40,7 @@ class App extends Component {
     this.executor = new ExecOps('./src');
 
     // Pass function to ExecOps object to cause render on receipt of console.logs.
-    this.executor.onend = logs => this.renderOutput(this.state.outputContent + logs);
+    this.executor.onend = logs => this.renderoutput(this.state.outputContent + logs);
 
     // Specify to give code 1000 milliseconds to finish evalling.
     this.executor.setdeadline(1000);
@@ -67,7 +67,7 @@ class App extends Component {
   runcode = () => {
 
     // Clear output.
-    this.renderOutput('');
+    this.renderoutput('');
 
     // If ExecOps object is still running opertions, cancel mission for new mission.
     if (this.executor.active()) this.endcode();
@@ -88,21 +88,21 @@ class App extends Component {
     this.executor.pressredbutton();
 
     // Log message to give feedback to user.
-    this.renderOutput(this.state.outputContent + 'Code ended by user.\n');
+    this.renderoutput(this.state.outputContent + 'Code ended by user.\n');
 
   } // End App.endcode
 
   /***************************
-   * App.renderOutput
+   * App.renderoutput
   ***************************/
 
-  // App.renderOutput prints text to the output that serves as an in-app console.
-  renderOutput = output => {
+  // App.renderoutput prints text to the output that serves as an in-app console.
+  renderoutput = output => {
 
     // Show output to user. Output will be single string split on '\n' to make list items.
     this.setState({ outputContent: output });
 
-  } // End App.renderOutput
+  } // End App.renderoutput
 
   /***************************
    * App.render

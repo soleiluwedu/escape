@@ -10062,7 +10062,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.runcode = () => {
 
       // Clear output.
-      this.renderOutput('');
+      this.renderoutput('');
 
       // If ExecOps object is still running opertions, cancel mission for new mission.
       if (this.executor.active()) this.endcode();
@@ -10077,10 +10077,10 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
       this.executor.pressredbutton();
 
       // Log message to give feedback to user.
-      this.renderOutput(this.state.outputContent + 'Code ended by user.\n');
+      this.renderoutput(this.state.outputContent + 'Code ended by user.\n');
     };
 
-    this.renderOutput = output => {
+    this.renderoutput = output => {
 
       // Show output to user. Output will be single string split on '\n' to make list items.
       this.setState({ outputContent: output });
@@ -10104,7 +10104,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     this.executor = new __WEBPACK_IMPORTED_MODULE_5__execops_hq___default.a('./src');
 
     // Pass function to ExecOps object to cause render on receipt of console.logs.
-    this.executor.onend = logs => this.renderOutput(this.state.outputContent + logs);
+    this.executor.onend = logs => this.renderoutput(this.state.outputContent + logs);
 
     // Specify to give code 1000 milliseconds to finish evalling.
     this.executor.setdeadline(1000);
@@ -10132,11 +10132,11 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
   // End App.endcode
 
   /***************************
-   * App.renderOutput
+   * App.renderoutput
   ***************************/
 
-  // App.renderOutput prints text to the output that serves as an in-app console.
-  // End App.renderOutput
+  // App.renderoutput prints text to the output that serves as an in-app console.
+  // End App.renderoutput
 
   /***************************
    * App.render
