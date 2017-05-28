@@ -60,6 +60,42 @@ const unlace = data => {
 } // End unlace function.
 
 /***************************
+ * assetAsyncOp
+***************************/
+
+// Accept async func => create new func to time and try-catch callback, then post one console output string.
+const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
+
+  // Report beginning of async operation back to Bridge Agent.
+  console.async();
+
+  // Try block for callback.
+  try {
+
+    // Perfrom callback.
+    callback();
+
+    // Report success status to Bridge Agent. Only occurs if no error encountered while executing callback.
+    console.success();
+
+  } // End try block for callback.
+
+  // Catch block for callback.
+  catch (err) {
+
+    // Send error message to Bridge Agent.
+    console.error(err.message);
+
+    // Report failure status to Bridge Agent.
+    console.failure();
+
+  } // End catch block for callback.
+
+}, wait); // End asyncFunc invocation.
+
+// End assetAsyncOp function.
+
+/***************************
  * AssetConsole class
 ***************************/
 
@@ -73,6 +109,18 @@ class AssetConsole {
     this.bridgeAgentPort = null;
 
   } // End AssetConsole.
+
+  /***************************
+   * AssetConsole.async
+  ***************************/
+
+  // AssetConsole.async reports asynchronous mission creep to Bridge Agent.
+  async() {
+
+    // Report beginning of async code execution to Bridge Agent.
+    this.bridgeAgentPort.postMessage({ type: 'async' });
+
+  } // End AssetConsole.async
 
   /***************************
    * AssetConsole.connect
@@ -125,21 +173,6 @@ class AssetConsole {
   } // End AssetConsole.connect
 
   /***************************
-   * AssetConsole.log
-  ***************************/
-
-  // AssetConsole.log sends console.logs to Bridge Agent.
-  log() {
-
-    // Make array from argumengs to gain native array method functionality.
-    const args = Array.from(arguments);
-
-    // Send log to Bridge Agent.
-    this.bridgeAgentPort.postMessage({ type: 'addlog', record: args.map(e => unlace(e)).join(' ') + '\n' });
-
-  } // End AssetConsole.log
-
-  /***************************
    * AssetConsole.error
   ***************************/
 
@@ -155,18 +188,6 @@ class AssetConsole {
   } // End AssetConsole.error
 
   /***************************
-   * AssetConsole.success
-  ***************************/
-
-  // AssetConsole.success reports success status to Bridge Agent.
-  success() {
-
-    // Report success status to Bridge Agent.
-    this.bridgeAgentPort.postMessage({ type: 'success' });
-
-  } // End AssetConsole.success
-
-  /***************************
    * AssetConsole.failure
   ***************************/
 
@@ -179,54 +200,33 @@ class AssetConsole {
   } // End AssetConsole.failure
 
   /***************************
-   * AssetConsole.async
+   * AssetConsole.log
   ***************************/
 
-  // AssetConsole.async reports asynchronous mission creep to Bridge Agent.
-  async() {
+  // AssetConsole.log sends console.logs to Bridge Agent.
+  log() {
 
-    // Report beginning of async code execution to Bridge Agent.
-    this.bridgeAgentPort.postMessage({ type: 'async' });
+    // Make array from argumengs to gain native array method functionality.
+    const args = Array.from(arguments);
 
-  } // End AssetConsole.async
+    // Send log to Bridge Agent.
+    this.bridgeAgentPort.postMessage({ type: 'addlog', record: args.map(e => unlace(e)).join(' ') + '\n' });
+
+  } // End AssetConsole.log
+
+  /***************************
+   * AssetConsole.success
+  ***************************/
+
+  // AssetConsole.success reports success status to Bridge Agent.
+  success() {
+
+    // Report success status to Bridge Agent.
+    this.bridgeAgentPort.postMessage({ type: 'success' });
+
+  } // End AssetConsole.success
 
 } // End AssetConsole class.
-
-/***************************
- * assetAsyncOp
-***************************/
-
-// Accept async func => create new func to time and try-catch callback, then post one console output string.
-const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
-
-  // Report beginning of async operation back to Bridge Agent.
-  console.async();
-
-  // Try block for callback.
-  try {
-
-    // Perfrom callback.
-    callback();
-
-    // Report success status to Bridge Agent. Only occurs if no error encountered while executing callback.
-    console.success();
-
-  } // End try block for callback.
-
-  // Catch block for callback.
-  catch (err) {
-
-    // Send error message to Bridge Agent.
-    console.error(err.message);
-
-    // Report failure status to Bridge Agent.
-    console.failure();
-
-  } // End catch block for callback.
-
-}, wait); // End asyncFunc invocation.
-
-// End assetAsyncOp function.
 
 /***************************
  * Jungle Patch

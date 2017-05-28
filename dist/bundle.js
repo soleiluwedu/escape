@@ -9836,7 +9836,7 @@ class ExecOps {
       this.hq.assassinID = setTimeout(() => {
 
         // Add time out error to be shown after console.logs.
-        this.hq.postRecord = 'Error: Code timed out.\n';
+        this.hq.postRecord = 'Error: Code timed out. Possible infinite loop.\n';
 
         // Collect final records from Bridge Agent, kill Bridge Agent, and kill Asset.
         this.pressredbutton();
@@ -10132,7 +10132,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
     // Pass function to ExecOps object to cause render on receipt of console.logs.
     this.executor.onend = logs => this.renderoutput(this.state.outputContent + logs);
 
-    // Specify to give code 1000 milliseconds to finish evalling.
+    // Specify to give code this many milliseconds to finish evalling.
     this.executor.setdeadline(1000);
   } // End App.constructor
 

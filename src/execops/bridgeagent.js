@@ -54,7 +54,7 @@ class BlackBox {
         case 'async':
 
           // Report mission status to headquarters.
-          this.reportStatus(report.data.type);
+          this.reportstatus(report.data.type);
 
           // Break to avoid initiating below protocols if any.
           break;
@@ -64,6 +64,30 @@ class BlackBox {
     } // End AssetConsole.port.onmessage
 
   } // End BlackBox.connect
+
+  /***************************
+   * BlackBox.explode
+  ***************************/
+
+  // BlackBox.explode kills the Bridge Agent and all his / her operations in a fiery glory.
+  explode() {
+
+    // Bridge Agent sets fuse on Black Box's hidden C4 and commits suicide.
+    self.close();
+
+  } // End BlacBox.explode
+
+  /***************************
+   * BlackBox.erase
+  ***************************/
+
+  // BlackBox.erase empties out the vault to prevent duplicate content on subsequent reports.
+  erase() {
+
+    // Set this.vault to empty string.
+    this.vault = '';
+
+  } // End BlackBox.erase
 
   /***************************
    * BlackBox.relay
@@ -78,16 +102,16 @@ class BlackBox {
   } // End Box.relay
 
   /***************************
-   * BlackBox.reportStatus
+   * BlackBox.reportstatus
   ***************************/
 
-  // BlackBox.reportStatus sends report to headquarters to indicate status of operations.
-  reportStatus(status) {
+  // BlackBox.reportstatus sends report to headquarters to indicate status of operations.
+  reportstatus(status) {
 
     // Report mission status to headquarters.
     self.postMessage({ type: status });
-    
-  } // End BlackBox.reportStatus
+
+  } // End BlackBox.reportstatus
 
   /***************************
    * BlackBox.save
@@ -105,25 +129,16 @@ class BlackBox {
    * BlackBox.sendrecords
   ***************************/
 
-  // BlackBox.sendrecords sends vault contents to headquarters.
+  // BlackBox.sendrecords sends vault contents to headquarters and then erases vault contents.
   sendrecords() {
 
     // Send console.logs to headquarters.
     self.postMessage({ type: 'records', records: this.vault });
 
-  } // End BlackBox.sendrecords
-
-  /***************************
-   * BlackBox.erase
-  ***************************/
-
-  // BlackBox.erase empties out the vault to prevent duplicate content on subsequent reports.
-  erase() {
-
-    // Set this.vault to empty string.
+    // Erase records to prevent duplicate data instances on next send.
     this.vault = '';
 
-  } // End BlackBox.erase
+  } // End BlackBox.sendrecords
 
 } // End BlackBox class
 
@@ -168,9 +183,6 @@ self.onmessage = dossier => {
       // Send console.logs to headquarters.
       box.sendrecords();
 
-      // Erase records to prevent duplicate data instances on next send.
-      box.erase();
-
       // Break to avoid initiating below protocols if any.
       break;
 
@@ -181,7 +193,7 @@ self.onmessage = dossier => {
       box.sendrecords();
 
       // Commit suicide.
-      self.close();
+      box.explode();
 
       // Break to avoid initiating below protocols if any.
       break;

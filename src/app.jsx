@@ -42,7 +42,7 @@ class App extends Component {
     // Pass function to ExecOps object to cause render on receipt of console.logs.
     this.executor.onend = logs => this.renderoutput(this.state.outputContent + logs);
 
-    // Specify to give code 1000 milliseconds to finish evalling.
+    // Specify to give code this many milliseconds to finish evalling.
     this.executor.setdeadline(1000);
 
   } // End App.constructor

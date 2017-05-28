@@ -329,7 +329,7 @@ class ExecOps {
     this.hq.assassinID = setTimeout(() => {
 
       // Add time out error to be shown after console.logs.
-      this.hq.postRecord = 'Error: Code timed out.\n';
+      this.hq.postRecord = 'Error: Code timed out. Possible infinite loop.\n';
 
       // Collect final records from Bridge Agent, kill Bridge Agent, and kill Asset.
       this.pressredbutton();
