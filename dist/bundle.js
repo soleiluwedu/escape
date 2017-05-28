@@ -9644,15 +9644,13 @@ class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 ***************************/
 
 /***************************
-
  * ExecOps API (all lower case method names, as opposed to methods not meant to be part of the API, which are camel case)
  *
- * (ExecOps instance).onend = function (consoleLogs) {} // Callback to be set by user. Runs on mission end. Is passed all the console.logs as one argument.
- * (ExecOps instance).setdeadline = (number of milliseconds) // Sets the number of milliseconds to wait before deciding that we have an infinite loops.
- * (ExecOps instance).newmission(`codeToEvalAsString`) // Use this method to run code that exists in the form one large string to be evaled.
  * (ExecOps instance).active() // Returns boolean indicating if code is currently being executed by web workers.
+ * (ExecOps instance).newmission(`codeToEvalAsString`) // Use this method to run code that exists in the form one large string to be evaled.
+ * (ExecOps instance).onend = function (consoleLogs) {} // Callback to be set by user. Runs on mission end. Is passed all the console.logs as one argument.
  * (ExecOps instance).pressredbutton() // Collects console.logs, kills web workers, makes new web workers, and runds the .onend callback.
-
+ * (ExecOps instance).setdeadline = (number of milliseconds) // Sets the number of milliseconds to wait before deciding that we have an infinite loops.
 ***************************/
 
 // ExecOps class executes code (to be evaled as a single string) and reports back console.logs and/or errors.
@@ -9662,16 +9660,10 @@ class ExecOps {
   // End ExecOps.jamesBondVillain
 
   constructor(location = './') {
-    this.onend = records => {
+    this.active = () => {
 
-      // Pass callback to overwrite this default behavior.
-      console.log(records);
-    };
-
-    this.setdeadline = time => {
-
-      // Time in millisecond to wait before deciding to kill Bridge Agent and Asset.
-      this.hq.deadline = time;
+      // Use this.hq.deployed boolean.
+      return this.hq.active;
     };
 
     this.newmission = mission => {
@@ -9686,10 +9678,10 @@ class ExecOps {
       this.jamesBondVillain();
     };
 
-    this.active = () => {
+    this.onend = records => {
 
-      // Use this.hq.deployed boolean.
-      return this.hq.active;
+      // Pass callback to overwrite this default behavior.
+      console.log(records);
     };
 
     this.pressredbutton = () => {
@@ -9705,6 +9697,12 @@ class ExecOps {
 
       // Deploy new agents.
       this.deployAgents();
+    };
+
+    this.setdeadline = time => {
+
+      // Time in millisecond to wait before deciding to kill Bridge Agent and Asset.
+      this.hq.deadline = time;
     };
 
     this.orderReport = () => {
@@ -9796,7 +9794,7 @@ class ExecOps {
       // Create new Worker to serve as Asset.
       this.ops.asset = new Worker(this.location + '/execops/asset.js');
 
-      // Protocol for receipt of report from Asset. Asset should not be sending messages to headquarters.
+      // Protocol for receipt of message from Asset. Asset should not be sending messages to headquarters.
       this.ops.asset.onmessage = report => console.log('Unexpected message from Asset: ' + report.data);
     };
 
@@ -9893,18 +9891,11 @@ class ExecOps {
   } // ExecOps.constructor
 
   /***************************
-   * ExecOps.onend
+   * ExecOps.active
   ***************************/
 
-  // ExecOps.onend is callback to be run on mission end. It is passed the console.logs as one argument.
-  // End ExecOps.onend
-
-  /***************************
-   * ExecOps.setdeadline
-  ***************************/
-
-  // ExecOps.setdeadline sets how long the Bridge Agent has to report back to avoid death for both Bridge Agent and Asset.
-  // End ExecOps.setdeadline
+  // ExecOps.active returns boolean indicating if Bridge Agent / Asset pair is active.
+  // End ExecOps.active
 
   /***************************
    * ExecOps.newmission
@@ -9914,11 +9905,11 @@ class ExecOps {
   // End ExecOps.newmission
 
   /***************************
-   * ExecOps.active
+   * ExecOps.onend
   ***************************/
 
-  // ExecOps.active returns boolean indicating if Bridge Agent / Asset pair is active.
-  // End ExecOps.active
+  // ExecOps.onend is callback to be run on mission end. It is passed the console.logs as one argument.
+  // End ExecOps.onend
 
   /***************************
    * ExecOps.pressredbutton
@@ -9926,6 +9917,13 @@ class ExecOps {
 
   // ExecOps.pressredbutton assassinates Asset, collects records from Bridge Agent, and instructs Bridge Agent to commit suicide.
   // End ExecOps.pressredbutton
+
+  /***************************
+   * ExecOps.setdeadline
+  ***************************/
+
+  // ExecOps.setdeadline sets how long the Bridge Agent has to report back to avoid death for both Bridge Agent and Asset.
+  // End ExecOps.setdeadline
 
   /***************************
    * ExecOps.orderReport
