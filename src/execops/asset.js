@@ -70,7 +70,7 @@ class AssetConsole {
   constructor() {
 
     // Port to send communication to Bridge Agent.
-    this.port = null;
+    this.bridgeAgentPort = null;
 
   } // End AssetConsole.
 
@@ -82,10 +82,10 @@ class AssetConsole {
   connect(port) {
 
     // Set port to given argument.
-    this.port = port;
+    this.bridgeAgentPort = port;
 
     // Set protocol for receipt of record from Bridge Agent.
-    this.port.onmessage = dossier => {
+    this.bridgeAgentPort.onmessage = dossier => {
 
       // Switch block evaluating orders in dossier.
       switch (dossier.data.command) {
@@ -135,7 +135,7 @@ class AssetConsole {
     const args = Array.from(arguments);
 
     // Send log to Bridge Agent.
-    this.port.postMessage({ type: 'addlog', record: args.map(e => unlace(e)).join(' ') + '\n' });
+    this.bridgeAgentPort.postMessage({ type: 'addlog', record: args.map(e => unlace(e)).join(' ') + '\n' });
 
   } // End AssetConsole.log
 
@@ -150,7 +150,7 @@ class AssetConsole {
     const args = Array.from(arguments);
 
     // Send error to Bridge Agent.
-    this.port.postMessage({ type: 'adderr', record: 'Error: ' + args.map(e => unlace(e)).join(' ') + '\n' });
+    this.bridgeAgentPort.postMessage({ type: 'adderr', record: 'Error: ' + args.map(e => unlace(e)).join(' ') + '\n' });
 
   } // End AssetConsole.error
 
@@ -162,7 +162,7 @@ class AssetConsole {
   success() {
 
     // Report success status to Bridge Agent.
-    this.port.postMessage({ type: 'success' });
+    this.bridgeAgentPort.postMessage({ type: 'success' });
 
   } // End AssetConsole.success
 
@@ -174,7 +174,7 @@ class AssetConsole {
   failure() {
 
     // Report failure status to Bridge Agent.
-    this.port.postMessage({ type: 'failure' });
+    this.bridgeAgentPort.postMessage({ type: 'failure' });
 
   } // End AssetConsole.failure
 
@@ -186,7 +186,7 @@ class AssetConsole {
   async() {
 
     // Report beginning of async code execution to Bridge Agent.
-    this.port.postMessage({ type: 'async' });
+    this.bridgeAgentPort.postMessage({ type: 'async' });
 
   } // End AssetConsole.async
 

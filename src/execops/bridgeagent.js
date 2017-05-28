@@ -8,8 +8,8 @@ class BlackBox {
   // BlackBox.constructor
   constructor() {
 
-    // this.port points to port to receive communication from Asset.
-    this.port = null;
+    // this.assetPort points to port to receive communication from Asset.
+    this.assetPort = null;
 
     // this.vault stores console.logs sent from Asset.
     this.vault = '';
@@ -24,10 +24,10 @@ class BlackBox {
   connect(port) {
 
     // Set port to given argument.
-    this.port = port;
+    this.assetPort = port;
 
     // Protocol for receipt of record from Asset.
-    this.port.onmessage = report => {
+    this.assetPort.onmessage = report => {
 
       // Switch block evaluating report type
       switch (report.data.type) {
@@ -73,7 +73,7 @@ class BlackBox {
   relay(mission) {
 
     // Send message to Asset with 'execute' command and mission briefing.
-    this.port.postMessage({ command: 'execute', mission: mission });
+    this.assetPort.postMessage({ command: 'execute', mission: mission });
 
   } // End Box.relay
 
