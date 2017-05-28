@@ -90,16 +90,16 @@ class BlackBox {
   } // End Box.save
 
   /***************************
-   * BlackBox.getrecords
+   * BlackBox.sendrecords
   ***************************/
 
-  // BlackBox.getrecords returns vault contents.
-  getrecords() {
+  // BlackBox.sendrecords sends vault contents to headquarters.
+  sendrecords() {
 
-    // Return contents of vault.
-    return this.vault;
+    // Send console.logs to headquarters.
+    self.postMessage({ type: 'records', records: this.vault });
 
-  } // End BlackBox.getrecords
+  } // End BlackBox.sendrecords
 
   /***************************
    * BlackBox.erase
@@ -154,7 +154,7 @@ self.onmessage = dossier => {
     case 'send':
 
       // Send console.logs to headquarters.
-      self.postMessage({ type: 'records', records: box.getrecords() });
+      box.sendrecords();
 
       // Erase records to prevent duplicate data instances on next send.
       box.erase();
@@ -166,7 +166,7 @@ self.onmessage = dossier => {
     case 'burn':
 
       // Send final console.logs to headquarters.
-      self.postMessage({ type: 'records', records: box.getrecords() });
+      box.sendrecords();
 
       // Commit suicide.
       self.close();

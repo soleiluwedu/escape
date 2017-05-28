@@ -216,7 +216,7 @@ class ExecOps {
         // Bridge Agent reports asynchronous mission creep.
         case 'async':
 
-        // Update headquarters to indicate no mission is active.
+          // Update headquarters to indicate no mission is active.
           this.hq.active = true;
 
           // Deploy new assassin that will give Bridge Agent and Asset plenty of time to escape death.
@@ -239,7 +239,7 @@ class ExecOps {
   deployAsset = () => {
 
     // Create new Worker to serve as Asset.
-    this.ops.asset = new Worker(this.location + '/execops/Asset.js');
+    this.ops.asset = new Worker(this.location + '/execops/asset.js');
 
     // Protocol for receipt of report from Asset. Asset should not be sending messages to headquarters.
     this.ops.asset.onmessage = report => console.log('Unexpected message from Asset: ' + report.data);
@@ -257,10 +257,10 @@ class ExecOps {
     this.ops.channel = new MessageChannel;
 
     // Open port on Bridge Agent for Asset to send console.logs as they are invoked.
-    this.ops.bridgeagent.postMessage({ command: 'port' }, [ this.ops.channel.port1 ]);
+    this.ops.bridgeagent.postMessage({ command: 'port' }, [this.ops.channel.port1]);
 
     // Open port on Asset to send console.logs to Bridge Agent as they are invoked.
-    this.ops.asset.postMessage({ command: 'port' }, [ this.ops.channel.port2 ]);
+    this.ops.asset.postMessage({ command: 'port' }, [this.ops.channel.port2]);
 
   } // End ExecOps.connectAgents
 
@@ -313,6 +313,7 @@ class ExecOps {
       // Run callback because mission has ended.
       this.onend(this.hq.records);
 
+      // this.hq.deadline is the time in milliseonds in which Bridge Agent must report by.
     }, this.hq.deadline); // End setTimeout invocation.
 
   } // End ExecOps.jamesBondVillain

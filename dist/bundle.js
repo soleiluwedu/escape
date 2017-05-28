@@ -9782,7 +9782,7 @@ class ExecOps {
     this.deployAsset = () => {
 
       // Create new Worker to serve as Asset.
-      this.ops.asset = new Worker(this.location + '/execops/Asset.js');
+      this.ops.asset = new Worker(this.location + '/execops/asset.js');
 
       // Protocol for receipt of report from Asset. Asset should not be sending messages to headquarters.
       this.ops.asset.onmessage = report => console.log('Unexpected message from Asset: ' + report.data);
@@ -9831,6 +9831,8 @@ class ExecOps {
 
         // Run callback because mission has ended.
         this.onend(this.hq.records);
+
+        // this.hq.deadline is the time in milliseonds in which Bridge Agent must report by.
       }, this.hq.deadline); // End setTimeout invocation.
     };
 

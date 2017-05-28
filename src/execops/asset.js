@@ -185,7 +185,7 @@ class AssetConsole {
   // AssetConsole.async reports asynchronous mission creep to Bridge Agent.
   async() {
 
-    // Report async status to Bridge Agent.
+    // Report beginning of async code execution to Bridge Agent.
     this.port.postMessage({ type: 'async' });
 
   } // End AssetConsole.async
@@ -208,7 +208,7 @@ const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
     // Perfrom callback.
     callback();
 
-    // Report success status to Bridge Agent.
+    // Report success status to Bridge Agent. Only occurs if no error encountered while executing callback.
     console.success();
 
   } // End try block for callback.
@@ -232,10 +232,7 @@ const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
  * Jungle Patch
 ***************************/
 
-// Saving original console.
-origConsole = console;
-
-// Monkey patch console object, setTimeout, and setInterval to report to bridge agent appropriately.
+// Monkey patch console object, setTimeout, and setInterval to report to Bridge Agent appropriately.
 [console, setTimeout, setInterval] = [new AssetConsole, assetAsyncOp(setTimeout), assetAsyncOp(setInterval)];
 
 /***************************
