@@ -141,6 +141,30 @@ class ExecOps {
   } // End ExecOps.pressredbutton
 
   /***************************
+   * ExecOps.orderReport
+  ***************************/
+
+  // ExecOps.orderReport sends command to Bridge Agent to report back all console.logs received from Asset.
+  orderReport = () => {
+
+    // Post message to Bridge Agent to send back all current records as a single string.
+    this.ops.bridgeagent.postMessage({ command: 'send' });
+
+  } // End ExecOps.orderReport
+
+  /***************************
+   * ExecOps.finalizeRecords
+  ***************************/
+
+  // ExecOps.finalizeRecords combines this.hq.preRecord, records given as argument, and this.hq.postRecord into this.hq.records.
+  finalizeRecords = records => {
+
+    // Finalize records by combining them with pre / post records.
+    this.hq.records = this.hq.preRecord + records + this.hq.postRecord;
+
+  } // End ExecOps.finalizeRecords
+
+  /***************************
    * ExecOps.clearRecords
   ***************************/
 
@@ -153,16 +177,16 @@ class ExecOps {
   } // End ExecOps.clearRecords
 
   /***************************
-   * ExecOps.orderReport
+   * ExecOps.setActiveStatus
   ***************************/
 
-  // ExecOps.orderReport sends command to Bridge Agent to report back all console.logs received from Asset.
-  orderReport = () => {
+  // ExecOps.setActiveStatus saves boolean for ExecOps.active() to retrieve to indicate if operations are active.
+  setActiveStatus = activeBoolean => {
 
-    // Post message to Bridge Agent to send back all current records as a single string.
-    this.ops.bridgeagent.postMessage({ command: 'send' });
+    // Save given status into this.hq.active.
+    this.hq.active = activeBoolean;
 
-  } // End ExecOps.orderReport
+  } // End ExecOps.setActiveStatus
 
   /***************************
    * ExecOps.deployBridgeAgent
@@ -186,8 +210,8 @@ class ExecOps {
         // Bridge Agent sending records.
         case 'records':
 
-          // Save records.
-          this.hq.records = this.hq.preRecord + report.data.records + this.hq.postRecord;
+          // Finalize records by combining them with pre / post records.
+          this.finalizeRecords(report.data.records);
 
           // Run this.onend, which can/should be overwritten by passed-in callback (default is to console.log records).
           this.onend(this.hq.records);
@@ -205,7 +229,7 @@ class ExecOps {
         case 'failure':
 
           // Update headquarters to indicate no mission is active.
-          this.hq.active = false;
+          this.setActiveStatus(false);
 
           // Obtain records from Bridge Agent.
           this.orderReport();
@@ -216,8 +240,8 @@ class ExecOps {
         // Bridge Agent reports asynchronous mission creep.
         case 'async':
 
-          // Update headquarters to indicate no mission is active.
-          this.hq.active = true;
+          // Update headquarters to indicate mission is active.
+          this.setActiveStatus(true);
 
           // Deploy new assassin that will give Bridge Agent and Asset plenty of time to escape death.
           this.jamesBondVillain();
