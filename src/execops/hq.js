@@ -8,7 +8,7 @@
  * (ExecOps instance).onmission() // Returns boolean indicating if web workers are currently executing code.
  * (ExecOps instance).newmission(`codeToEvalAsString`) // Use this method to run code that exists in the form one large string to be evaled.
  * (ExecOps instance).onend = function (consoleLogs) {} // Callback to be set by user. Runs on mission end. Is passed all the console.logs as one argument.
- * (ExecOps instance).pressredbutton() // Kills web workers and makes new web workers without asking for final logs, then runs the .onend callback.
+ * (ExecOps instance).pressredbutton() // Kills web workers and makes new web workers, then runs the .onend callback.
  * (ExecOps instance).setdeadline = (number of milliseconds) // Sets the number of milliseconds to wait before deciding that we have an infinite loops.
 ***************************/
 
@@ -119,7 +119,7 @@ class ExecOps {
   pressredbutton = () => {
 
     // Call off any possible remaining assassin, to prevent accidentally killing next mission.
-    this.jamesBondEscapes();
+    this.villainFails();
 
     // Eliminate Asset.
     this.ops.asset.terminate();
@@ -209,7 +209,7 @@ class ExecOps {
     this.ops.bridgeagent.onmessage = report => {
 
       // Call off the hit.
-      this.jamesBondEscapes();
+      this.villainFails();
 
       // switch block evaluating report type
       switch (report.data.type) {
@@ -317,16 +317,16 @@ class ExecOps {
   } // End ExecOps.deployAgents
 
   /***************************
-   * ExecOps.jamesBondEscapes
+   * ExecOps.villainFails
   ***************************/
 
-  // ExecOps.jamesBondEscapes cancels assassination mission.
-  jamesBondEscapes = () => {
+  // ExecOps.villainFails cancels assassination mission.
+  villainFails = () => {
 
     // Call off the hit.
     clearTimeout(this.hq.assassinID);
 
-  } // End ExecOps.jamesBondEscapes
+  } // End ExecOps.villainFails
 
   /***************************
    * ExecOps.jamesBondVillain
