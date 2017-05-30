@@ -14,6 +14,9 @@ class BlackBox {
     // this.vault stores console.logs sent from Asset.
     this.vault = '';
 
+    // this.currentMissionID refers to current mission ID given by headquarters.
+    this.currentMissionID = null;
+
   } // End BlackBox.constructor
 
   /***************************
@@ -66,28 +69,28 @@ class BlackBox {
   } // End BlackBox.connect
 
   /***************************
+   * BlackBox.erase
+  ***************************/
+
+  // BlackBox.erase erase console.logs from memory.
+  erase() {
+
+    // Set this.vault tp empty string.
+    this.vault = '';
+
+  } // End BlacBox.erase
+
+  /***************************
    * BlackBox.explode
   ***************************/
 
   // BlackBox.explode kills the Bridge Agent and all his / her operations in a fiery glory.
   explode() {
 
-    // Bridge Agent sets fuse on Black Box's hidden C4 and commits suicide.
+    // Bridge Agent sets fuse on Black Box's hidden C4 and commits suicide while destroying all evidence.
     self.close();
 
   } // End BlacBox.explode
-
-  /***************************
-   * BlackBox.erase
-  ***************************/
-
-  // BlackBox.erase empties out the vault to prevent duplicate content on subsequent reports.
-  erase() {
-
-    // Set this.vault to empty string.
-    this.vault = '';
-
-  } // End BlackBox.erase
 
   /***************************
    * BlackBox.relay
@@ -126,6 +129,18 @@ class BlackBox {
   } // End Box.save
 
   /***************************
+   * BlackBox.savemissionID
+  ***************************/
+
+  // Box.savemissionID keeps current mission ID given by headquarters to attach to report.
+  savemissionID(id) {
+
+    // Save mission ID.
+    this.currentMissionID = id;
+
+  } // End Box.savemissionID
+
+  /***************************
    * BlackBox.sendrecords
   ***************************/
 
@@ -133,7 +148,7 @@ class BlackBox {
   sendrecords() {
 
     // Send console.logs to headquarters.
-    self.postMessage({ type: 'records', records: this.vault });
+    self.postMessage({ type: 'records', records: this.vault, missionID: this.currentMissionID });
 
     // Erase records to prevent duplicate data instances on next send.
     this.vault = '';
@@ -170,6 +185,12 @@ self.onmessage = dossier => {
 
     // Received command to relay mission briefing to Asset.
     case 'relay':
+
+      // Clear records from previous mission to prevent overlap of records on different missions.
+      box.erase();
+
+      // Save mission ID to attach to report.
+      box.savemissionID(dossier.data.missionID);  
 
       // Relay mission briefing to Asset.
       box.relay(dossier.data.mission);

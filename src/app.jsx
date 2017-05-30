@@ -66,11 +66,14 @@ class App extends Component {
   // App.runcode clears output and sends editor content to ExecOps object and possibly code-share peers.
   runcode = () => {
 
+    // End all ExecOps operations.
+    this.executor.pressredbutton();
+
     // Clear output.
     this.renderoutput('');
 
     // If ExecOps object is still running opertions, render message and refuse to execute new mission.
-    if (this.executor.active()) this.renderoutput('Previous Run Code command still executing.\n');
+    if (this.executor.onmission()) this.renderoutput('Previous Run Code command still executing.\n');
 
     // Else send editor content to ExecOps object to execute.
     else this.executor.newmission(this.state.editorContent);
@@ -84,7 +87,7 @@ class App extends Component {
   // App.endcode terminates ExecOps operations.
   endcode = () => {
 
-    // Kill all ExecOps operations.
+    // End all ExecOps operations.
     this.executor.pressredbutton();
 
     // Log message to give feedback to user.

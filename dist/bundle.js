@@ -9646,10 +9646,10 @@ class Editor extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 /***************************
  * ExecOps API (all lower case method names, as opposed to methods not meant to be part of the API, which are camel case)
  *
- * (ExecOps instance).active() // Returns boolean indicating if code is currently being executed by web workers.
+ * (ExecOps instance).onmission() // Returns boolean indicating if web workers are currently executing code.
  * (ExecOps instance).newmission(`codeToEvalAsString`) // Use this method to run code that exists in the form one large string to be evaled.
  * (ExecOps instance).onend = function (consoleLogs) {} // Callback to be set by user. Runs on mission end. Is passed all the console.logs as one argument.
- * (ExecOps instance).pressredbutton() // Collects console.logs, kills web workers, makes new web workers, and runds the .onend callback.
+ * (ExecOps instance).pressredbutton() // Kills web workers and makes new web workers without asking for final logs, then runs the .onend callback.
  * (ExecOps instance).setdeadline = (number of milliseconds) // Sets the number of milliseconds to wait before deciding that we have an infinite loops.
 ***************************/
 
@@ -9660,19 +9660,22 @@ class ExecOps {
   // End ExecOps.jamesBondVillain
 
   constructor(location = './') {
-    this.active = () => {
+    this.onmission = () => {
 
       // Use this.hq.deployed boolean.
-      return this.hq.active;
+      return this.hq.onmission;
     };
 
     this.newmission = mission => {
 
-      // Send mission briefing to Bridge Agent to relay to Asset.
-      this.ops.bridgeagent.postMessage({ command: 'relay', mission: mission });
+      // Kill previous Bridge Agent / Asset pair.
+      this.pressredbutton();
 
-      // Update headquarters to indicate mission active.
-      this.hq.active = true;
+      // Update headquarters to indicate onmission status is active.
+      this.setOnMissionStatus(true);
+
+      // Send mission briefing to Bridge Agent to relay to Asset.
+      this.ops.bridgeagent.postMessage({ command: 'relay', mission: mission, missionID: ++this.hq.currentMissionID });
 
       // Put out a hit on the Bridge Agent / Asset pair that will be cancelled if Bridge Agent reports back in time.
       this.jamesBondVillain();
@@ -9686,14 +9689,17 @@ class ExecOps {
 
     this.pressredbutton = () => {
 
+      // Call off any possible remaining assassin, to prevent accidentally killing next mission.
+      this.jamesBondEscapes();
+
       // Eliminate Asset.
       this.ops.asset.terminate();
 
-      // Order Bridge Agent to send final records and commit suicide.
+      // Order Bridge Agent to send final console.logs and then commit suicide.
       this.ops.bridgeagent.postMessage({ command: 'burn' });
 
       // Update headquarters to indicate no active mission.
-      this.hq.active = false;
+      this.setOnMissionStatus(false);
 
       // Deploy new agents.
       this.deployAgents();
@@ -9705,10 +9711,10 @@ class ExecOps {
       this.hq.deadline = time;
     };
 
-    this.orderReport = () => {
+    this.clearRecords = () => {
 
-      // Post message to Bridge Agent to send back all current records as a single string.
-      this.ops.bridgeagent.postMessage({ command: 'send' });
+      // Set all records and pre / post messages to empty string.
+      this.hq.records = this.hq.preRecord = this.hq.postRecord = '';
     };
 
     this.finalizeRecords = records => {
@@ -9717,16 +9723,16 @@ class ExecOps {
       this.hq.records = this.hq.preRecord + records + this.hq.postRecord;
     };
 
-    this.clearRecords = () => {
+    this.orderReport = () => {
 
-      // Set all records and pre / post messages to empty string.
-      this.hq.records = this.hq.preRecord = this.hq.postRecord = '';
+      // Post message to Bridge Agent to send back all current records as a single string.
+      this.ops.bridgeagent.postMessage({ command: 'send' });
     };
 
-    this.setActiveStatus = activeBoolean => {
+    this.setOnMissionStatus = boolean => {
 
-      // Save given status into this.hq.active.
-      this.hq.active = activeBoolean;
+      // Save given status into this.hq.onmission.
+      this.hq.onmission = boolean;
     };
 
     this.deployBridgeAgent = () => {
@@ -9745,6 +9751,9 @@ class ExecOps {
 
           // Bridge Agent sending records.
           case 'records':
+
+            // Ignore records that are from an old mission.
+            if (report.data.missionID !== this.hq.currentMissionID) return;
 
             // Finalize records by combining them with pre / post records.
             this.finalizeRecords(report.data.records);
@@ -9765,7 +9774,7 @@ class ExecOps {
           case 'failure':
 
             // Update headquarters to indicate no mission is active.
-            this.setActiveStatus(false);
+            this.setOnMissionStatus(false);
 
             // Obtain records from Bridge Agent.
             this.orderReport();
@@ -9777,7 +9786,7 @@ class ExecOps {
           case 'async':
 
             // Update headquarters to indicate mission is active.
-            this.setActiveStatus(true);
+            this.setOnMissionStatus(true);
 
             // Deploy new assassin that will give Bridge Agent and Asset plenty of time to escape death.
             this.jamesBondVillain();
@@ -9866,11 +9875,14 @@ class ExecOps {
     // { this.hq object } keeps data concerning operations of Bridge Agent and Asset.
     this.hq = {
 
+      // ID given to mission to identify source of returned console.log records.
+      currentMissionID: 0,
+
       // this.hq.assassinID is setTimeout ID of function to kill Bridge Agent / Asset pair.
       assassinID: null,
 
-      // this.hq.active is boolean to indicate if Agent is currently executing mission.
-      active: false,
+      // this.hq.onmission is boolean to indicate if Agent is currently executing mission.
+      onmission: false,
 
       // this.hq.deadline is Bridge Agent must check in after 'deadline' number of milliseconds, or the pair is killed.
       deadline: 1000,
@@ -9891,11 +9903,11 @@ class ExecOps {
   } // ExecOps.constructor
 
   /***************************
-   * ExecOps.active
+   * ExecOps.onmission
   ***************************/
 
-  // ExecOps.active returns boolean indicating if Bridge Agent / Asset pair is active.
-  // End ExecOps.active
+  // ExecOps.onmission returns boolean indicating if Bridge Agent / Asset pair is active.
+  // End ExecOps.onmission
 
   /***************************
    * ExecOps.newmission
@@ -9915,7 +9927,7 @@ class ExecOps {
    * ExecOps.pressredbutton
   ***************************/
 
-  // ExecOps.pressredbutton assassinates Asset, collects records from Bridge Agent, and instructs Bridge Agent to commit suicide.
+  // ExecOps.pressredbutton assassinates Asset and Bridge Agent without asking for final logs.
   // End ExecOps.pressredbutton
 
   /***************************
@@ -9926,11 +9938,11 @@ class ExecOps {
   // End ExecOps.setdeadline
 
   /***************************
-   * ExecOps.orderReport
+   * ExecOps.clearRecords
   ***************************/
 
-  // ExecOps.orderReport sends command to Bridge Agent to report back all console.logs received from Asset.
-  // End ExecOps.orderReport
+  // ExecOps.clearRecords deletes all mission records from headquarters.
+  // End ExecOps.clearRecords
 
   /***************************
    * ExecOps.finalizeRecords
@@ -9940,18 +9952,18 @@ class ExecOps {
   // End ExecOps.finalizeRecords
 
   /***************************
-   * ExecOps.clearRecords
+   * ExecOps.orderReport
   ***************************/
 
-  // ExecOps.clearRecords deletes all mission records from headquarters.
-  // End ExecOps.clearRecords
+  // ExecOps.orderReport sends command to Bridge Agent to report back all console.logs received from Asset.
+  // End ExecOps.orderReport
 
   /***************************
-   * ExecOps.setActiveStatus
+   * ExecOps.setOnMissionStatus
   ***************************/
 
-  // ExecOps.setActiveStatus saves boolean for ExecOps.active() to retrieve to indicate if operations are active.
-  // End ExecOps.setActiveStatus
+  // ExecOps.setOnMissionStatus saves boolean for ExecOps.onmission().
+  // End ExecOps.setOnMissionStatus
 
   /***************************
    * ExecOps.deployBridgeAgent
@@ -10085,11 +10097,14 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
     this.runcode = () => {
 
+      // End all ExecOps operations.
+      this.executor.pressredbutton();
+
       // Clear output.
       this.renderoutput('');
 
       // If ExecOps object is still running opertions, render message and refuse to execute new mission.
-      if (this.executor.active()) this.renderoutput('Previous Run Code command still executing.\n');
+      if (this.executor.onmission()) this.renderoutput('Previous Run Code command still executing.\n');
 
       // Else send editor content to ExecOps object to execute.
       else this.executor.newmission(this.state.editorContent);
@@ -10097,7 +10112,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_0_react__["Component"] {
 
     this.endcode = () => {
 
-      // Kill all ExecOps operations.
+      // End all ExecOps operations.
       this.executor.pressredbutton();
 
       // Log message to give feedback to user.
