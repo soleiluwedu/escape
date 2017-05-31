@@ -18,9 +18,9 @@ const unlace = data => {
     case console.failure:
     case onmessage: return 'undefined';
     case this: return '[object Window]';
-    case console: return '[object Console]'
-    case console.log: return 'ƒ log()'
-    case console.error: return 'ƒ error()'
+    case console: return '[object Console]';
+    case console.log: return 'ƒ log()';
+    case console.error: return 'ƒ error()';
     case setTimeout: return 'ƒ setTimeout()';
     case setInterval: return 'ƒ setInterval()';
 
@@ -178,9 +178,10 @@ class AssetConsole {
 
   // AssetConsole.error sends errors to Bridge Agent.
   error(err) {
+    origConsole.dir(err);
 
     // Initiate string to serve as error log.
-    let errorMsg = `${err.constructor.name}`
+    let errorMsg = err.constructor.name;
 
     // Variables used to break up the err.stack string, in order to identify line number.
     let lineNumberIndex, startingWithLineNumber, lineNumber;
@@ -260,7 +261,7 @@ class AssetConsole {
 /***************************
  * Jungle Patch
 ***************************/
-
+const origConsole = console;
 // Monkey patch console object, setTimeout, and setInterval to report to Bridge Agent appropriately.
 [console, setTimeout, setInterval] = [new AssetConsole, assetAsyncOp(setTimeout), assetAsyncOp(setInterval)];
 
