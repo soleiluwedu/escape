@@ -178,7 +178,6 @@ class AssetConsole {
 
   // AssetConsole.error sends errors to Bridge Agent.
   error(err) {
-    origConsole.dir(err);
 
     // Initiate string to serve as error log.
     let errorMsg = err.constructor.name;
@@ -261,7 +260,7 @@ class AssetConsole {
 /***************************
  * Jungle Patch
 ***************************/
-const origConsole = console;
+
 // Monkey patch console object, setTimeout, and setInterval to report to Bridge Agent appropriately.
 [console, setTimeout, setInterval] = [new AssetConsole, assetAsyncOp(setTimeout), assetAsyncOp(setInterval)];
 
