@@ -182,6 +182,9 @@ class AssetConsole {
     // Initiate string to serve as error log.
     let errorMsg = err.constructor.name;
 
+    // Below string is always right before the line number.
+    const precedesLineNumber = '<anonymous>:';
+
     // Variables used to break up the err.stack string, in order to identify line number.
     let lineNumberIndex, startingWithLineNumber, lineNumber;
 
@@ -194,8 +197,8 @@ class AssetConsole {
       // Reference Error
       case 'ReferenceError':
         
-        // Line number of error is in err.stack and starts immediately after the below string, which is 12 characters long.
-        lineNumberIndex = err.stack.indexOf('<anonymous>:') + 12;
+        // Line number of error is in err.stack and starts immediately after the below string.
+        lineNumberIndex = err.stack.indexOf(precedesLineNumber) + precedesLineNumber.length;
 
         // String from err.stack excluding everything before the line number.
         startingWithLineNumber = err.stack.slice(lineNumberIndex);
@@ -206,10 +209,10 @@ class AssetConsole {
     } // End switch block evaluating type of error.
 
     // Add line number if lineNumber is truthy (line numbers start with 1, not 0, so it will be truthy if there is one at all).
-    errorMsg += !!lineNumber ? ` at line ${lineNumber}: ` : ': ';
+    if (!!lineNumber) errorMsg += ` on line ${lineNumber}`;
 
     // Append Error object's message field onto error log.
-    errorMsg += err.message;
+    errorMsg += `: ${err.message}`;
 
     // Send error to Bridge Agent.
     this.bridgeAgentPort.postMessage({ type: 'adderr', record: errorMsg + '\n' });
