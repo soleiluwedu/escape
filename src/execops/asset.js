@@ -10,17 +10,17 @@ const unlace = data => {
 
     // Expressions blocked.
     case unlace:
-    case AssetConsole:
     case assetAsyncOp:
+    case AssetConsole:
     case console.async:
     case console.connect:
-    case console.success:
     case console.failure:
+    case console.logerr:
+    case console.success:
     case onmessage: return 'undefined';
-    case this: return '[object Window]';
-    case console: return '[object Console]';
+    case this: return '[global scope]';
+    case console: return '[console object]';
     case console.log: return 'ƒ log()';
-    case console.error: return 'ƒ error()';
     case setTimeout: return 'ƒ setTimeout()';
     case setInterval: return 'ƒ setInterval()';
 
@@ -84,7 +84,7 @@ const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
   catch (err) {
 
     // Send error message to Bridge Agent.
-    console.error(err);
+    console.logerr(err);
 
     // Report failure status to Bridge Agent.
     console.failure();
@@ -156,7 +156,7 @@ class AssetConsole {
           catch (err) {
 
             // Send error message to Bridge Agent.
-            this.error(err);
+            this.logerr(err);
 
             // Report failure status to Bridge Agent.
             this.failure();
@@ -173,11 +173,45 @@ class AssetConsole {
   } // End AssetConsole.connect
 
   /***************************
-   * AssetConsole.error
+   * AssetConsole.failure
   ***************************/
 
-  // AssetConsole.error sends errors to Bridge Agent.
-  error(err) {
+  // AssetConsole.failure reports failure status to Bridge Agent.
+  failure() {
+
+    // Report failure status to Bridge Agent.
+    this.bridgeAgentPort.postMessage({ type: 'failure' });
+
+  } // End AssetConsole.failure
+
+  /***************************
+   * AssetConsole.success
+  ***************************/
+
+  /***************************
+   * AssetConsole.log
+  ***************************/
+
+  // AssetConsole.log sends console.logs to Bridge Agent.
+  log() {
+
+    // Make array from argumengs to gain native array method functionality.
+    const args = Array.from(arguments);
+
+    // Send log to Bridge Agent.
+    this.bridgeAgentPort.postMessage({ type: 'addlog', record: args.map(e => unlace(e)).join(' ') + '\n' });
+
+  } // End AssetConsole.log
+
+  /***************************
+   * AssetConsole.logerr
+  ***************************/
+
+  // AssetConsole.logerr sends errors to Bridge Agent.
+  logerr(err) {
+
+    // If anything other an Error was passed in, then user is attempting to manually use it. Do not allow.
+    if (!(err instanceof Error)) throw new TypeError('console.logerr is not a function');
 
     // Initiate string to serve as error log.
     let errorMsg = err.constructor.name;
@@ -217,38 +251,7 @@ class AssetConsole {
     // Send error to Bridge Agent.
     this.bridgeAgentPort.postMessage({ type: 'adderr', record: errorMsg + '\n' });
 
-  } // End AssetConsole.error
-
-  /***************************
-   * AssetConsole.failure
-  ***************************/
-
-  // AssetConsole.failure reports failure status to Bridge Agent.
-  failure() {
-
-    // Report failure status to Bridge Agent.
-    this.bridgeAgentPort.postMessage({ type: 'failure' });
-
-  } // End AssetConsole.failure
-
-  /***************************
-   * AssetConsole.log
-  ***************************/
-
-  // AssetConsole.log sends console.logs to Bridge Agent.
-  log() {
-
-    // Make array from argumengs to gain native array method functionality.
-    const args = Array.from(arguments);
-
-    // Send log to Bridge Agent.
-    this.bridgeAgentPort.postMessage({ type: 'addlog', record: args.map(e => unlace(e)).join(' ') + '\n' });
-
-  } // End AssetConsole.log
-
-  /***************************
-   * AssetConsole.success
-  ***************************/
+  } // End AssetConsole.logerr
 
   // AssetConsole.success reports success status to Bridge Agent.
   success() {
