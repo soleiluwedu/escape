@@ -75,7 +75,7 @@ class BlackBox {
   // BlackBox.erase erase console.logs from memory.
   erase() {
 
-    // Set this.vault tp empty string.
+    // Set this.vault to empty string.
     this.vault = '';
 
   } // End BlacBox.erase
@@ -190,7 +190,7 @@ self.onmessage = dossier => {
       box.erase();
 
       // Save mission ID to attach to report.
-      box.savemissionID(dossier.data.missionID);  
+      box.savemissionID(dossier.data.missionID);
 
       // Relay mission briefing to Asset.
       box.relay(dossier.data.mission);

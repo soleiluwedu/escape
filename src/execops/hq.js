@@ -5,9 +5,9 @@
 /***************************
  * ExecOps API (all lower case method names, as opposed to methods not meant to be part of the API, which are camel case)
  *
- * (ExecOps instance).onmission() // Returns boolean indicating if web workers are currently executing code.
  * (ExecOps instance).newmission(`codeToEvalAsString`) // Use this method to run code that exists in the form one large string to be evaled.
  * (ExecOps instance).onend = function (consoleLogs) {} // Callback to be set by user. Runs on mission end. Is passed all the console.logs as one argument.
+ * (ExecOps instance).onmission() // Returns boolean indicating if web workers are currently executing code.
  * (ExecOps instance).pressredbutton() // Kills web workers and makes new web workers, then runs the .onend callback.
  * (ExecOps instance).setdeadline = (number of milliseconds) // Sets the number of milliseconds to wait before deciding that we have an infinite loops.
 ***************************/

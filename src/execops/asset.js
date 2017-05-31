@@ -84,7 +84,7 @@ const assetAsyncOp = asyncFunc => (callback, wait) => asyncFunc(() => {
   catch (err) {
 
     // Send error message to Bridge Agent.
-    console.error(err.message);
+    console.error(err);
 
     // Report failure status to Bridge Agent.
     console.failure();
@@ -156,7 +156,7 @@ class AssetConsole {
           catch (err) {
 
             // Send error message to Bridge Agent.
-            this.error(err.message);
+            this.error(err);
 
             // Report failure status to Bridge Agent.
             this.failure();
@@ -177,13 +177,42 @@ class AssetConsole {
   ***************************/
 
   // AssetConsole.error sends errors to Bridge Agent.
-  error() {
+  error(err) {
 
-    // Make array from argumengs to gain native array method functionality.
-    const args = Array.from(arguments);
+    // Initiate string to serve as error log.
+    let errorMsg = `${err.constructor.name}`
+
+    // Variables used to break up the err.stack string, in order to identify line number.
+    let lineNumberIndex, startingWithLineNumber, lineNumber;
+
+    // Evaluate type of error for errors that have line numbers. SyntaxErrors have no line numbers.
+    switch (err.constructor.name) {
+
+      // Type Error
+      case 'TypeError':
+      
+      // Reference Error
+      case 'ReferenceError':
+        
+        // Line number of error is in err.stack and starts immediately after the below string, which is 12 characters long.
+        lineNumberIndex = err.stack.indexOf('<anonymous>:') + 12;
+
+        // String from err.stack excluding everything before the line number.
+        startingWithLineNumber = err.stack.slice(lineNumberIndex);
+
+        // Line number ends before the first colon.
+        lineNumber = startingWithLineNumber.slice(0, startingWithLineNumber.indexOf(':'));
+
+    } // End switch block evaluating type of error.
+
+    // Add line number if lineNumber is truthy (line numbers start with 1, not 0, so it will be truthy if there is one at all).
+    errorMsg += !!lineNumber ? ` at line ${lineNumber}: ` : ': ';
+
+    // Append Error object's message field onto error log.
+    errorMsg += err.message;
 
     // Send error to Bridge Agent.
-    this.bridgeAgentPort.postMessage({ type: 'adderr', record: 'Error: ' + args.map(e => unlace(e)).join(' ') + '\n' });
+    this.bridgeAgentPort.postMessage({ type: 'adderr', record: errorMsg + '\n' });
 
   } // End AssetConsole.error
 
