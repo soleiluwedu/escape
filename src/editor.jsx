@@ -32,7 +32,7 @@ class Editor extends Component {
   ***************************/
 
   // Needed for any key-press-specific functionality.
-  onkeydown(e) {
+  onkeydown = e => {
 
     // When user presses the 'Tab' key, added two spaces and move selection indices.
     if (e.key === 'Tab') {
@@ -78,9 +78,9 @@ class Editor extends Component {
       <div id={this.props.editorId}>
         <textarea
           // Should be passed from parent component to report textarea value on change.
-          onChange={e => this.props.onchange(e)}
+          onChange={this.props.onchange}
           // Local method used for key-specific functionality.
-          onKeyDown={e => this.onkeydown(e)}
+          onKeyDown={this.onkeydown}
         >
           {/* Content of editor textarea, to be updated by parent on change. */}
           {this.props.content}
