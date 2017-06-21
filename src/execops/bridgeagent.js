@@ -112,7 +112,7 @@ class BlackBox {
   reportstatus(status) {
 
     // Report mission status to headquarters.
-    self.postMessage({ type: status });
+    self.postMessage({ type: status, missionID: this.currentMissionID });
 
   } // End BlackBox.reportstatus
 
